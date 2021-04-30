@@ -8,7 +8,7 @@ Download everything inside the `lib` folder and import it into your project.
 
 #### **API**  
 ### .dragOptions
-> ### Make an interface draggable  
+> Make an interface draggable  
 ```ts
 Interface
   Element
@@ -16,8 +16,8 @@ Interface
 ```
 This will allow this element to be dragged around from its defined [`width`](https://www.vylocity.com/resources/docs/Diob/width.html) and [`height`](https://www.vylocity.com/resources/docs/Diob/height.html) dimensions as long as it has a [`mouseOpacity`](https://www.vylocity.com/resources/docs/Diob/mouseOpacity.html) value that is above `0`.
 
-> ### Make a child element follow a parent element when dragging  
 ### .parentElement
+> Make a child element follow a parent element when dragging  
 
 ```ts
 Interface
@@ -30,13 +30,17 @@ Interface
   Element
     var dragOptions = { 'draggable': true }
   ```
-  When `ParentElement` is dragged, wherever `ChildElement` is in relation to `ParentElement` it will be dragged along with it.  
+  `ChildElement` needs it's `parentElement` var set to the [`name`](https://www.vylocity.com/resources/docs/Diob/name.html) of the `Element` that will be its parent.  
 
   `ChildElement` must exist in the same `Interface` file as `ParentElement`.  
 
-  There can only be one element with `dragOptions.parent` enabled per `Interface` but an unlimited number of elements can have `parentElement` enabled.
+  `ParentElement` needs `dragOptions.parent` set if a `ChildElement` has its name as its `parentElement` var.  
 
-> ### Make a title-bar  
+  When `ParentElement` is dragged, wherever `ChildElement` is in relation to `ParentElement` it will be dragged along with it.   
+
+  There can only be one element with `dragOptions.parent` enabled per `Interface` but an unlimited number of elements can have `parentElement` enabled per `Interface`.
+
+### Make a title-bar  
 
 ```ts
 Interface
@@ -46,7 +50,7 @@ Interface
 
 This will enable a `virtual` title-bar on the element. Meaning the element will only be able to be dragged from this `virtual` title-bar. The origin of the element is it's top-left corner; so `100` pixels to the right and `30` pixels down defines the `virtual` title-bar for this element. Grabbing the element from within those values will let you drag it.
 
-> ### Can i move the title-bar's origin?  
+### Can i move the title-bar's origin?  
 
 ```ts
 Interface
