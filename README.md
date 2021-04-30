@@ -6,7 +6,7 @@ A small powerful library that will allow you to really get control over your VyS
 
 Download everything inside the `lib` folder and import it into your project.
 
-> # **API**  
+ > **API**   
 ### .dragOptions
 > Make an interface draggable  
 ```ts
