@@ -1,11 +1,13 @@
 ## Interface-utils  
+
 `CLIENT-SIDE ONLY`  
+
 A small powerful library that will allow you to really get control over your VyScript interfaces.  
 
 Download everything inside the `lib` folder and import it into your project.
 
-> #### **API**  
-## Dragging  
+#### **API**  
+### .dragOptions
 > ### Make an interface draggable  
 ```ts
 Interface
@@ -15,6 +17,7 @@ Interface
 This will allow this element to be dragged around from its defined [`width`](https://www.vylocity.com/resources/docs/Diob/width.html) and [`height`](https://www.vylocity.com/resources/docs/Diob/height.html) dimensions as long as it has a [`mouseOpacity`](https://www.vylocity.com/resources/docs/Diob/mouseOpacity.html) value that is above `0`.
 
 > ### Make a child element follow a parent element when dragging  
+### .parentElement
 
 ```ts
 Interface
