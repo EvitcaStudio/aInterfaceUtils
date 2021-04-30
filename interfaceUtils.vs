@@ -1,12 +1,8 @@
 #ENABLE LOCALCLIENTCODE
 #BEGIN CLIENTCODE
 
-#DEFINE GAME_WIDTH 960
-#DEFINE GAME_HEIGHT 540
-// change the above to match your `World.gameWidth` and `World.gameHeight`
-
 Client
-	var ___windowSize = { 'width': GAME_WIDTH, 'height': GAME_HEIGHT }
+	var ___windowSize = { 'width': 0, 'height': 0 }
 	var ___screenScale = { 'x': 1, 'y': 1 }
 	var ___dragging = { 'element': null, 'xOff': 0, 'yOff': 0 }
 	var ___mousedDowned
@@ -98,11 +94,11 @@ Client
 				var titleBarWidthX = titleBarX + this.___dragging.element.dragOptions.titlebar.width
 				var titleBarY = this.___dragging.element.yPos + this.___dragging.element.dragOptions.titlebar.yPos
 				var titleBarHeightY = titleBarY + this.___dragging.element.dragOptions.titlebar.height
-				var maxWidth = (this.___dragging.element.preventAutoScale ? this.___windowSize.width: GAME_WIDTH) - this.___dragging.element.width
-				var maxHeight = (this.___dragging.element.preventAutoScale ? this.___windowSize.height : GAME_HEIGHT) - this.___dragging.element.height
+				var maxWidth = (this.___dragging.element.preventAutoScale ? this.___windowSize.width : World.getGameSize().width) - this.___dragging.element.width
+				var maxHeight = (this.___dragging.element.preventAutoScale ? this.___windowSize.height : World.getGameSize().height) - this.___dragging.element.height
 			else	
-				var maxWidth = (this.___dragging.element.preventAutoScale ? this.___windowSize.width : GAME_WIDTH) - this.___dragging.element.width
-				var maxHeight = (this.___dragging.element.preventAutoScale ? this.___windowSize.height : GAME_HEIGHT) - this.___dragging.element.height
+				var maxWidth = (this.___dragging.element.preventAutoScale ? this.___windowSize.width : World.getGameSize().width) - this.___dragging.element.width
+				var maxHeight = (this.___dragging.element.preventAutoScale ? this.___windowSize.height : World.getGameSize().height) - this.___dragging.element.height
 
 			this.___dragging.element.setPos(Math.clamp(realX, this.___dragging.element.dragOptions.offsets.x.min, maxWidth - this.___dragging.element.dragOptions.offsets.x.max), Math.clamp(realY, this.___dragging.element.dragOptions.offsets.y.min, maxHeight - this.___dragging.element.dragOptions.offsets.y.max))
 
@@ -231,8 +227,8 @@ Interface
 
 	function reposition(x, y, dX, dY)
 		var size = { 
-			'width': (this.preventAutoScale ? this.___client.___windowSize.width : GAME_WIDTH),
-			'height': (this.preventAutoScale ? this.___client.___windowSize.height : GAME_HEIGHT)
+			'width': (this.preventAutoScale ? this.___client.___windowSize.width : World.getGameSize().width),
+			'height': (this.preventAutoScale ? this.___client.___windowSize.height : World.getGameSize().height)
 		}
 		var xOff = this.___client.___dragging.xOff
 		var yOff = this.___client.___dragging.yOff
