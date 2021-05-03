@@ -44,7 +44,7 @@ Client
 					e.dragOptions.offsets.y = { 'max': e.dragOptions.freeze.y.max - e.yPos - e.height + e.dragOptions.freeze.y.maxHeight, 'min': 0 }
 
 				if (protudingDirection === 'sn' || protudingDirection === 'ens' || protudingDirection === 'wns' || protudingDirection === 'ewns')
-					e.dragOptions.offsets.y = { 'max': e.dragOptions.freeze.y.max - e.yPos - e.height + e.dragOptions.freeze.y.maxHeight, 'min': e.yPos - e.dragOptions.freeze.y.min }				
+					e.dragOptions.offsets.y = { 'max': e.dragOptions.freeze.y.max - e.yPos - e.height + e.dragOptions.freeze.y.maxHeight, 'min': e.yPos - e.dragOptions.freeze.y.min }
 				continue
 
 			if (e.parentElement)
@@ -58,7 +58,7 @@ Client
 					e.dragOptions.offsets.x.min = e.dragOptions.offsets.x.max
 					e.dragOptions.offsets.y.max = Math.sign(e.yPos - parent.yPos) === -1 ? 0 : e.yPos - parent.yPos
 					e.dragOptions.offsets.y.min = e.dragOptions.offsets.y.max
-					continue	
+					continue
 
 				if (protudingDirection === 'n' || protudingDirection === 's' || protudingDirection === 'sn')
 					e.dragOptions.offsets.x = { 'max': noneX, 'min': noneX }
@@ -83,7 +83,7 @@ Client
 
 				if (protudingDirection === 'sn' || protudingDirection === 'ens' || protudingDirection === 'wns' || protudingDirection === 'ewns')
 					e.dragOptions.offsets.y = { 'max': parent.dragOptions.freeze.y.max - e.yPos + e.height, 'min': e.yPos - parent.dragOptions.freeze.y.min }
-	
+
 	onMouseMove(diob, x, y)
 		if (this.___dragging.element)
 			var realX = (this.___dragging.element.preventAutoScale ? x * this.___screenScale.x : x) - this.___dragging.xOff
@@ -96,7 +96,7 @@ Client
 				var titleBarHeightY = titleBarY + this.___dragging.element.dragOptions.titlebar.height
 				var maxWidth = (this.___dragging.element.preventAutoScale ? this.___windowSize.width : World.getGameSize().width) - this.___dragging.element.width
 				var maxHeight = (this.___dragging.element.preventAutoScale ? this.___windowSize.height : World.getGameSize().height) - this.___dragging.element.height
-			else	
+			else
 				var maxWidth = (this.___dragging.element.preventAutoScale ? this.___windowSize.width : World.getGameSize().width) - this.___dragging.element.width
 				var maxHeight = (this.___dragging.element.preventAutoScale ? this.___windowSize.height : World.getGameSize().height) - this.___dragging.element.height
 
@@ -106,15 +106,15 @@ Client
 
 				realX += this.___dragging.xOff
 				realY += this.___dragging.yOff
-				
+
 			this.___dragging.element.onMove(realX, realY)
 
 			if (this.___dragging.element.dragOptions.beingDragged)
 				return
-				
+
 			this.___dragging.element.dragOptions.beingDragged = true
 			this.___dragging.element.onDragStart()
-				
+
 	onMouseDown(diob, x, y, button)
 		if (button === 1)
 			this.___mousedDowned = diob
@@ -132,7 +132,7 @@ Client
 						return
 
 					this.___dragging = { 'element': diob, 'xOff': realX - diob.xPos, 'yOff': realY - diob.yPos }
-				
+
 	onMouseUp(diob, x, y, button)
 		if (button === 1)
 			if (this.___dragging.element)
@@ -141,9 +141,9 @@ Client
 					var realY = (this.___dragging.element.preventAutoScale ? y * this.___screenScale.y : y)
 					this.___dragging.element.onDragEnd(realX, realY)
 					return
-				
+
 			this.___dragging.element = null
-			
+
 Interface
 	var parentElement
 	var dragOptions = { 'draggable': false, 'beingDragged': false, 'parent': false, 'offsets': { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } }
@@ -152,6 +152,7 @@ Interface
 	var ___protruding = { 'east': false, 'west': false, 'north': false, 'south': false }
 	var ___client
 	var ___defaultDisplay
+	anchor = 0.5
 
 	onNew()
 		var interface = this.getInterfaceName()
@@ -162,7 +163,7 @@ Interface
 		if (this.dragOptions.titlebar)
 			if (!this.dragOptions.titlebar.xPos)
 				this.dragOptions.titlebar.xPos = 0
-				
+
 			if (!this.dragOptions.titlebar.yPos)
 				this.dragOptions.titlebar.yPos = 0
 
@@ -208,11 +209,11 @@ Interface
 			if (x.dragOptions.draggable)
 				protruding = x.___protruding
 
-		this.___client.___onInterfaceLoaded(interface, protruding) 
+		this.___client.___onInterfaceLoaded(interface, protruding)
 
 	function onDragStart()
 		//...
-				
+
 	function onDragEnd(x, y)
 		this.___client.___dragging.element.dragOptions.beingDragged = false
 		this.___client.___dragging.element = null
@@ -226,7 +227,7 @@ Interface
 				e.reposition(x, y, dX, dY)
 
 	function reposition(x, y, dX, dY)
-		var size = { 
+		var size = {
 			'width': (this.preventAutoScale ? this.___client.___windowSize.width : World.getGameSize().width),
 			'height': (this.preventAutoScale ? this.___client.___windowSize.height : World.getGameSize().height)
 		}
@@ -246,7 +247,7 @@ Interface
 
 		if (protudingDirection === 'n' || protudingDirection === 'e' || protudingDirection === 'w' || protudingDirection === 'wn' || protudingDirection === 'ew' || protudingDirection === 'en' || protudingDirection === 'ewn')
 			this.yPos = Math.clamp(y - yOff + this.___defaultPos.y - dY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.owner.height + this.dragOptions.offsets.y.max)
-		
+
 		if (protudingDirection === 's' || protudingDirection === 'ws' || protudingDirection === 'sn' || protudingDirection === 'es' || protudingDirection === 'ews' || protudingDirection === 'ewns' || protudingDirection === 'ens' || protudingDirection === 'wns')
 			this.yPos = Math.clamp(y - yOff + this.___defaultPos.y - dY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.offsets.y.max)
 
