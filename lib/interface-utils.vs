@@ -12,82 +12,87 @@ Client
 		this.___screenScale = this.getScreenScale()
 		this.___EVITCA_drag = true
 
-	onWindowResize(width, height)
-		this.___windowSize.width = width
-		this.___windowSize.height = height
+	onWindowResize(pWidth, pHeight)
+		this.___windowSize.width = pWidth
+		this.___windowSize.height = pHeight
 		this.___screenScale = this.getScreenScale()
 
-	function ___onInterfaceLoaded(interface, protruding)
-		foreach (var e in this.getInterfaceElements(interface))
-			if (protruding)
-				e.___protruding = protruding
-				var protudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][e.___protruding.east | (e.___protruding.west << 1) | (e.___protruding.north << 2) | (e.___protruding.south << 3)]
+	onInterfaceLoaded(pInterface)
+		var pProtruding
+		foreach (var x in this.getInterfaceElements(pInterface))
+			if (x.dragOptions.draggable && x.dragOptions.parent)
+				pProtruding = x.___protruding
 
-			if (e.dragOptions.draggable)
-				if (protudingDirection === 'none')
+		foreach (var e in this.getInterfaceElements(pInterface))
+			if (pProtruding)
+				e.___protruding = pProtruding
+				var protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][e.___protruding.east | (e.___protruding.west << 1) | (e.___protruding.north << 2) | (e.___protruding.south << 3)]
+
+			if (e.dragOptions.draggable && e.dragOptions.parent)
+				if (protrudingDirection === 'none')
 					e.dragOptions.offsets = { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } }
 					continue
 
-				if (protudingDirection === 'e' || protudingDirection === 'en' || protudingDirection === 'es' || protudingDirection === 'ens')
+				if (protrudingDirection === 'e' || protrudingDirection === 'en' || protrudingDirection === 'es' || protrudingDirection === 'ens')
 					e.dragOptions.offsets.x = { 'max': e.dragOptions.freeze.x.max - e.xPos - e.width + e.dragOptions.freeze.x.maxWidth, 'min': 0 }
 
-				if (protudingDirection === 'w' || protudingDirection === 'wn' || protudingDirection === 'ws' || protudingDirection === 'wns')
+				if (protrudingDirection === 'w' || protrudingDirection === 'wn' || protrudingDirection === 'ws' || protrudingDirection === 'wns')
 					e.dragOptions.offsets.x = { 'max': 0, 'min': e.xPos - e.dragOptions.freeze.x.min }
 
-				if (protudingDirection === 'ew' || protudingDirection === 'ewn' || protudingDirection === 'ews' || protudingDirection === 'ewns')
+				if (protrudingDirection === 'ew' || protrudingDirection === 'ewn' || protrudingDirection === 'ews' || protrudingDirection === 'ewns')
 					e.dragOptions.offsets.x = { 'max': e.dragOptions.freeze.x.max - e.xPos - e.width + e.dragOptions.freeze.x.maxWidth, 'min': e.xPos - e.dragOptions.freeze.x.min }
 
-				if (protudingDirection === 'n' || protudingDirection === 'en' || protudingDirection === 'wn' || protudingDirection === 'ewn')
+				if (protrudingDirection === 'n' || protrudingDirection === 'en' || protrudingDirection === 'wn' || protrudingDirection === 'ewn')
 					e.dragOptions.offsets.y = { 'max': 0, 'min': e.yPos - e.dragOptions.freeze.y.min }
 
-				if (protudingDirection === 's' || protudingDirection === 'es' || protudingDirection === 'ws' || protudingDirection === 'ews')
+				if (protrudingDirection === 's' || protrudingDirection === 'es' || protrudingDirection === 'ws' || protrudingDirection === 'ews')
 					e.dragOptions.offsets.y = { 'max': e.dragOptions.freeze.y.max - e.yPos - e.height + e.dragOptions.freeze.y.maxHeight, 'min': 0 }
 
-				if (protudingDirection === 'sn' || protudingDirection === 'ens' || protudingDirection === 'wns' || protudingDirection === 'ewns')
+				if (protrudingDirection === 'sn' || protrudingDirection === 'ens' || protrudingDirection === 'wns' || protrudingDirection === 'ewns')
 					e.dragOptions.offsets.y = { 'max': e.dragOptions.freeze.y.max - e.yPos - e.height + e.dragOptions.freeze.y.maxHeight, 'min': e.yPos - e.dragOptions.freeze.y.min }
 				continue
 
 			if (e.parentElement)
-				var parent = this.getInterfaceElement(interface, e.parentElement)
+				var parent = this.getInterfaceElement(pInterface, e.parentElement)
 				var noneX = Math.sign(e.xPos - parent.xPos) === -1 ? 0 : e.xPos - parent.xPos
 				var noneY = Math.sign(e.yPos - parent.yPos) === -1 ? 0 : e.yPos - parent.yPos
 				e.dragOptions.owner = parent
 
-				if (protudingDirection === 'none')
+				if (protrudingDirection === 'none')
 					e.dragOptions.offsets.x.max = Math.sign(e.xPos - parent.xPos) === -1 ? 0 : e.xPos - parent.xPos
 					e.dragOptions.offsets.x.min = e.dragOptions.offsets.x.max
 					e.dragOptions.offsets.y.max = Math.sign(e.yPos - parent.yPos) === -1 ? 0 : e.yPos - parent.yPos
 					e.dragOptions.offsets.y.min = e.dragOptions.offsets.y.max
 					continue
 
-				if (protudingDirection === 'n' || protudingDirection === 's' || protudingDirection === 'sn')
+				if (protrudingDirection === 'n' || protrudingDirection === 's' || protrudingDirection === 'sn')
 					e.dragOptions.offsets.x = { 'max': noneX, 'min': noneX }
 
-				if (protudingDirection === 'e' || protudingDirection === 'es' || protudingDirection === 'en' || protudingDirection === 'ens')
+				if (protrudingDirection === 'e' || protrudingDirection === 'es' || protrudingDirection === 'en' || protrudingDirection === 'ens')
 					e.dragOptions.offsets.x = { 'max': parent.dragOptions.freeze.x.max - e.xPos + e.width, 'min': noneX }
 
-				if (protudingDirection === 'w' || protudingDirection === 'ws' || protudingDirection === 'wns' || protudingDirection === 'wn')
+				if (protrudingDirection === 'w' || protrudingDirection === 'ws' || protrudingDirection === 'wns' || protrudingDirection === 'wn')
 					e.dragOptions.offsets.x = { 'max': e.xPos - parent.xPos, 'min': e.xPos - parent.dragOptions.freeze.x.min }
 
-				if (protudingDirection === 'ew' || protudingDirection === 'ewn' || protudingDirection === 'ews' || protudingDirection === 'ewns')
+				if (protrudingDirection === 'ew' || protrudingDirection === 'ewn' || protrudingDirection === 'ews' || protrudingDirection === 'ewns')
 					e.dragOptions.offsets.x = { 'max': parent.dragOptions.freeze.x.max - e.xPos + e.width, 'min': e.xPos - parent.dragOptions.freeze.x.min }
 
-				if (protudingDirection === 'n' || protudingDirection === 'wn' || protudingDirection === 'en' || protudingDirection === 'ewn')
+				if (protrudingDirection === 'n' || protrudingDirection === 'wn' || protrudingDirection === 'en' || protrudingDirection === 'ewn')
 					e.dragOptions.offsets.y = { 'max': e.yPos - parent.yPos, 'min': e.yPos - parent.dragOptions.freeze.y.min }
 
-				if (protudingDirection === 's' || protudingDirection === 'ws' || protudingDirection === 'es' || protudingDirection === 'ews')
+				if (protrudingDirection === 's' || protrudingDirection === 'ws' || protrudingDirection === 'es' || protrudingDirection === 'ews')
 					e.dragOptions.offsets.y = { 'max': parent.dragOptions.freeze.y.max - e.yPos + e.height, 'min': noneY }
 
-				if (protudingDirection === 'e' || protudingDirection === 'w' || protudingDirection === 'ew')
+				if (protrudingDirection === 'e' || protrudingDirection === 'w' || protrudingDirection === 'ew')
 					e.dragOptions.offsets.y = { 'max': noneY, 'min': noneY }
 
-				if (protudingDirection === 'sn' || protudingDirection === 'ens' || protudingDirection === 'wns' || protudingDirection === 'ewns')
+				if (protrudingDirection === 'sn' || protrudingDirection === 'ens' || protrudingDirection === 'wns' || protrudingDirection === 'ewns')
 					e.dragOptions.offsets.y = { 'max': parent.dragOptions.freeze.y.max - e.yPos + e.height, 'min': e.yPos - parent.dragOptions.freeze.y.min }
 
-	onMouseMove(diob, x, y)
+	onMouseMove(pDiob, pX, pY)
 		if (this.___dragging.element)
-			var realX = (this.___dragging.element.preventAutoScale ? x * this.___screenScale.x : x) - this.___dragging.xOff
-			var realY = (this.___dragging.element.preventAutoScale ? y * this.___screenScale.y : y) - this.___dragging.yOff
+			var realX = (this.___dragging.element.preventAutoScale ? pX * this.___screenScale.x : pX) - this.___dragging.xOff
+			var realY = (this.___dragging.element.preventAutoScale ? pY * this.___screenScale.y : pY) - this.___dragging.yOff
 
 			if (this.___dragging.element.dragOptions?.titlebar?.xPos >= 0 && this.___dragging.element.dragOptions?.titlebar?.yPos >= 0 && this.___dragging.element.dragOptions?.titlebar?.width > 0 && this.___dragging.element.dragOptions?.titlebar?.height > 0)
 				var titleBarX = this.___dragging.element.xPos + this.___dragging.element.dragOptions.titlebar.xPos
@@ -115,30 +120,30 @@ Client
 			this.___dragging.element.dragOptions.beingDragged = true
 			this.___dragging.element.onDragStart()
 
-	onMouseDown(diob, x, y, button)
-		if (button === 1)
-			this.___mousedDowned = diob
-			if (diob.baseType === 'Interface')
-				if (diob.dragOptions.draggable)
-					var realX = (diob.preventAutoScale ? x * this.___screenScale.x : x)
-					var realY = (diob.preventAutoScale ? y * this.___screenScale.y : y)
-					if (diob.dragOptions?.titlebar?.xPos >= 0 && diob.dragOptions?.titlebar?.yPos >= 0 && diob.dragOptions?.titlebar?.width > 0 && diob.dragOptions?.titlebar?.height > 0)
-						var titleBarX = diob.xPos + diob.dragOptions.titlebar.xPos
-						var titleBarWidthX = titleBarX + diob.dragOptions.titlebar.width
-						var titleBarY = diob.yPos + diob.dragOptions.titlebar.yPos
-						var titleBarHeightY = titleBarY + diob.dragOptions.titlebar.height
+	onMouseDown(pDiob, pX, pY, pButton)
+		if (pButton === 1)
+			this.___mousedDowned = pDiob
+			if (pDiob.baseType === 'Interface')
+				if (pDiob.dragOptions.draggable)
+					var realX = (pDiob.preventAutoScale ? pX * this.___screenScale.x : pX)
+					var realY = (pDiob.preventAutoScale ? pY * this.___screenScale.y : pY)
+					if (pDiob.dragOptions?.titlebar?.xPos >= 0 && pDiob.dragOptions?.titlebar?.yPos >= 0 && pDiob.dragOptions?.titlebar?.width > 0 && pDiob.dragOptions?.titlebar?.height > 0)
+						var titleBarX = pDiob.xPos + pDiob.dragOptions.titlebar.xPos
+						var titleBarWidthX = titleBarX + pDiob.dragOptions.titlebar.width
+						var titleBarY = pDiob.yPos + pDiob.dragOptions.titlebar.yPos
+						var titleBarHeightY = titleBarY + pDiob.dragOptions.titlebar.height
 						if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY)
-							this.___dragging = { 'element': diob, 'xOff': realX - titleBarX + diob.dragOptions.titlebar.xPos, 'yOff': realY - titleBarY + diob.dragOptions.titlebar.yPos }
+							this.___dragging = { 'element': pDiob, 'xOff': realX - titleBarX + pDiob.dragOptions.titlebar.xPos, 'yOff': realY - titleBarY + pDiob.dragOptions.titlebar.yPos }
 						return
 
-					this.___dragging = { 'element': diob, 'xOff': realX - diob.xPos, 'yOff': realY - diob.yPos }
+					this.___dragging = { 'element': pDiob, 'xOff': realX - pDiob.xPos, 'yOff': realY - pDiob.yPos }
 
-	onMouseUp(diob, x, y, button)
-		if (button === 1)
+	onMouseUp(pDiob, pX, pY, pButton)
+		if (pButton === 1)
 			if (this.___dragging.element)
 				if (this.___dragging.element.dragOptions.beingDragged)
-					var realX = (this.___dragging.element.preventAutoScale ? x * this.___screenScale.x : x)
-					var realY = (this.___dragging.element.preventAutoScale ? y * this.___screenScale.y : y)
+					var realX = (this.___dragging.element.preventAutoScale ? pX * this.___screenScale.x : pX)
+					var realY = (this.___dragging.element.preventAutoScale ? pY * this.___screenScale.y : pY)
 					this.___dragging.element.onDragEnd(realX, realY)
 					return
 
@@ -148,18 +153,14 @@ Interface
 	var parentElement
 	var dragOptions = { 'draggable': false, 'beingDragged': false, 'parent': false, 'offsets': { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } }
 	var ___defaultPos = {}
-	var ___loaded
 	var ___protruding = { 'east': false, 'west': false, 'north': false, 'south': false }
-	var ___client
 	var ___defaultDisplay
 	anchor = 0.5
 
 	onNew()
 		var interface = this.getInterfaceName()
-		var protruding
 		this.___defaultPos = { 'x': this.xPos, 'y': this.yPos }
 		this.___defaultDisplay = { 'layer': this.layer, 'plane': this.plane }
-		this.___client = this.getClient()
 		if (this.dragOptions.titlebar)
 			if (!this.dragOptions.titlebar.xPos)
 				this.dragOptions.titlebar.xPos = 0
@@ -170,7 +171,7 @@ Interface
 		if (this.dragOptions.draggable)
 			this.dragOptions.freeze = { 'x': { 'min': 0, 'max': 0, 'minWidth': 0, 'maxWidth': 0 }, 'y': { 'min': 0, 'max': 0, 'minHeight': 0, 'maxHeight': 0 }, 'updateX': false, 'updateX2': false, 'updateY': false, 'updateY2': false }
 			this.dragOptions.offsets = { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } }
-			foreach (var e in this.___client.getInterfaceElements(interface))
+			foreach (var e in Client.getInterfaceElements(interface))
 				if (e.parentElement === this.name)
 					var greaterX = (e.xPos > this.xPos + this.width) && (this.dragOptions.freeze.x.max ? e.xPos > this.dragOptions.freeze.x.max : true)
 					var lesserX = (e.xPos < this.xPos) && (this.dragOptions.freeze.x.min ? e.xPos < this.dragOptions.freeze.x.min : true)
@@ -201,54 +202,44 @@ Interface
 						this.dragOptions.freeze.y.minHeight = e.height
 						this.___protruding.north = true
 
-		this.___loaded = true
-
-		foreach (var x in this.___client.getInterfaceElements(interface))
-			if (!x.___loaded)
-				return
-			if (x.dragOptions.draggable)
-				protruding = x.___protruding
-
-		this.___client.___onInterfaceLoaded(interface, protruding)
-
 	function onDragStart()
 		//...
 
-	function onDragEnd(x, y)
-		this.___client.___dragging.element.dragOptions.beingDragged = false
-		this.___client.___dragging.element = null
+	function onDragEnd(pX, pY)
+		Client.___dragging.element.dragOptions.beingDragged = false
+		Client.___dragging.element = null
 
-	function onMove(x, y)
+	function onMove(pX, pY)
 		var interface = this.getInterfaceName()
-		foreach (var e in this.___client.getInterfaceElements(interface))
+		foreach (var e in Client.getInterfaceElements(interface))
 			if (e.parentElement === this.name)
-				var dX = this.___client.getInterfaceElement(interface, e.parentElement).___defaultPos.x
-				var dY = this.___client.getInterfaceElement(interface, e.parentElement).___defaultPos.y
-				e.reposition(x, y, dX, dY)
+				var dX = Client.getInterfaceElement(interface, e.parentElement).___defaultPos.x
+				var dY = Client.getInterfaceElement(interface, e.parentElement).___defaultPos.y
+				e.reposition(pX, pY, dX, dY)
 
-	function reposition(x, y, dX, dY)
+	function reposition(pX, pY, dX, dY)
 		var size = {
-			'width': (this.preventAutoScale ? this.___client.___windowSize.width : World.getGameSize().width),
-			'height': (this.preventAutoScale ? this.___client.___windowSize.height : World.getGameSize().height)
+			'width': (this.preventAutoScale ? Client.___windowSize.width : World.getGameSize().width),
+			'height': (this.preventAutoScale ? Client.___windowSize.height : World.getGameSize().height)
 		}
-		var xOff = this.___client.___dragging.xOff
-		var yOff = this.___client.___dragging.yOff
-		var protudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][this.___protruding.east | (this.___protruding.west << 1) | (this.___protruding.north << 2) | (this.___protruding.south << 3)]
+		var xOff = Client.___dragging.xOff
+		var yOff = Client.___dragging.yOff
+		var protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][this.___protruding.east | (this.___protruding.west << 1) | (this.___protruding.north << 2) | (this.___protruding.south << 3)]
 
-		if (protudingDirection === 'none')
-			this.setPos(Math.clamp(x - xOff + this.___defaultPos.x - dX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.owner.width + this.dragOptions.offsets.x.min), Math.clamp(y - yOff + this.___defaultPos.y - dY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.owner.height + this.dragOptions.offsets.y.min))
+		if (protrudingDirection === 'none')
+			this.setPos(Math.clamp(pX - xOff + this.___defaultPos.x - dX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.owner.width + this.dragOptions.offsets.x.min), Math.clamp(pY - yOff + this.___defaultPos.y - dY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.owner.height + this.dragOptions.offsets.y.min))
 			return
 
-		if (protudingDirection === 'n' || protudingDirection === 's' || protudingDirection === 'w' || protudingDirection === 'wn' || protudingDirection === 'ws' || protudingDirection === 'sn' || protudingDirection === 'wns')
-			this.xPos = Math.clamp(x - xOff + this.___defaultPos.x - dX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.owner.width + this.dragOptions.offsets.x.max)
+		if (protrudingDirection === 'n' || protrudingDirection === 's' || protrudingDirection === 'w' || protrudingDirection === 'wn' || protrudingDirection === 'ws' || protrudingDirection === 'sn' || protrudingDirection === 'wns')
+			this.xPos = Math.clamp(pX - xOff + this.___defaultPos.x - dX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.owner.width + this.dragOptions.offsets.x.max)
 
-		if (protudingDirection === 'e' || protudingDirection === 'ew' || protudingDirection === 'es' || protudingDirection === 'en' || protudingDirection === 'ewn' || protudingDirection === 'ews' || protudingDirection === 'ewns' || protudingDirection === 'ens')
-			this.xPos = Math.clamp(x - xOff + this.___defaultPos.x - dX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.offsets.x.max)
+		if (protrudingDirection === 'e' || protrudingDirection === 'ew' || protrudingDirection === 'es' || protrudingDirection === 'en' || protrudingDirection === 'ewn' || protrudingDirection === 'ews' || protrudingDirection === 'ewns' || protrudingDirection === 'ens')
+			this.xPos = Math.clamp(pX - xOff + this.___defaultPos.x - dX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.offsets.x.max)
 
-		if (protudingDirection === 'n' || protudingDirection === 'e' || protudingDirection === 'w' || protudingDirection === 'wn' || protudingDirection === 'ew' || protudingDirection === 'en' || protudingDirection === 'ewn')
-			this.yPos = Math.clamp(y - yOff + this.___defaultPos.y - dY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.owner.height + this.dragOptions.offsets.y.max)
+		if (protrudingDirection === 'n' || protrudingDirection === 'e' || protrudingDirection === 'w' || protrudingDirection === 'wn' || protrudingDirection === 'ew' || protrudingDirection === 'en' || protrudingDirection === 'ewn')
+			this.yPos = Math.clamp(pY - yOff + this.___defaultPos.y - dY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.owner.height + this.dragOptions.offsets.y.max)
 
-		if (protudingDirection === 's' || protudingDirection === 'ws' || protudingDirection === 'sn' || protudingDirection === 'es' || protudingDirection === 'ews' || protudingDirection === 'ewns' || protudingDirection === 'ens' || protudingDirection === 'wns')
-			this.yPos = Math.clamp(y - yOff + this.___defaultPos.y - dY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.offsets.y.max)
+		if (protrudingDirection === 's' || protrudingDirection === 'ws' || protrudingDirection === 'sn' || protrudingDirection === 'es' || protrudingDirection === 'ews' || protrudingDirection === 'ewns' || protrudingDirection === 'ens' || protrudingDirection === 'wns')
+			this.yPos = Math.clamp(pY - yOff + this.___defaultPos.y - dY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.offsets.y.max)
 
 #END CLIENTCODE
