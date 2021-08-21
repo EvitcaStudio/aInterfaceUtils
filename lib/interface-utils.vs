@@ -9,13 +9,13 @@ Client
 
 	onNew()
 		this.___windowSize = this.getWindowSize()
-		this.___screenScale = this.getScreenScale()
+		this.getScreenScale(this.___screenScale)
 		this.___EVITCA_drag = true
 
 	onWindowResize(pWidth, pHeight)
 		this.___windowSize.width = pWidth
 		this.___windowSize.height = pHeight
-		this.___screenScale = this.getScreenScale()
+		this.getScreenScale(this.___screenScale)
 
 	onInterfaceLoaded(pInterface)
 		var pProtruding
