@@ -10,7 +10,7 @@ Client
 	onNew()
 		this.___windowSize = this.getWindowSize()
 		this.getScreenScale(this.___screenScale)
-		this.___EVITCA_drag = true
+		this.___EVITCA_aInterfaceUtils = true
 
 	onWindowResize(pWidth, pHeight)
 		this.___windowSize.width = pWidth
