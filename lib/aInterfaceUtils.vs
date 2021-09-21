@@ -10,7 +10,7 @@ Client
 	onNew()
 		this.___windowSize = this.getWindowSize()
 		this.getScreenScale(this.___screenScale)
-		this.___EVITCA_aInterfaceUtils = true
+		this.___EVITCA_drag = true
 
 	onWindowResize(pWidth, pHeight)
 		this.___windowSize.width = pWidth
@@ -155,12 +155,15 @@ Interface
 	var ___defaultPos = {}
 	var ___protruding = { 'east': false, 'west': false, 'north': false, 'south': false }
 	var ___defaultDisplay
+	var ___defaultSize
+	scale = { 'x': 1, 'y': 1 }
 	anchor = 0.5
 
 	onNew()
 		var interface = this.getInterfaceName()
 		this.___defaultPos = { 'x': this.xPos, 'y': this.yPos }
 		this.___defaultDisplay = { 'layer': this.layer, 'plane': this.plane }
+		this.___defaultSize = { 'width': this.width, 'height': this.height }
 		if (this.dragOptions.titlebar)
 			if (!this.dragOptions.titlebar.xPos)
 				this.dragOptions.titlebar.xPos = 0
