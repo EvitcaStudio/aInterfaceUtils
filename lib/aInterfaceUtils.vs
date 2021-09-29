@@ -1,32 +1,36 @@
+#DEFINE MAX_PLANE 999999
+
 #ENABLE LOCALCLIENTCODE
 #BEGIN CLIENTCODE
 
 Client
-	var ___windowSize = { 'width': 0, 'height': 0 }
-	var ___screenScale = { 'x': 1, 'y': 1 }
-	var ___dragging = { 'element': null, 'xOff': 0, 'yOff': 0 }
-	var ___mousedDowned
+	var _windowSize
+	var _gameSize
+	var _screenScale = { 'x': 1, 'y': 1 }
+	var _dragging = { 'element': null, 'xOff': 0, 'yOff': 0 }
+	var _mousedDowned
 
 	onNew()
-		this.___windowSize = this.getWindowSize()
-		this.getScreenScale(this.___screenScale)
+		this._windowSize = this.getWindowSize()
+		this._gameSize = World.getGameSize()
+		this.getScreenScale(this._screenScale)
 		this.___EVITCA_aInterfaceUtils = true
 
 	onWindowResize(pWidth, pHeight)
-		this.___windowSize.width = pWidth
-		this.___windowSize.height = pHeight
-		this.getScreenScale(this.___screenScale)
+		this._windowSize.width = pWidth
+		this._windowSize.height = pHeight
+		this.getScreenScale(this._screenScale)
 
 	onInterfaceLoaded(pInterface)
-		var pProtruding
+		var protruding
 		foreach (var x in this.getInterfaceElements(pInterface))
 			if (x.dragOptions.draggable && x.dragOptions.parent)
-				pProtruding = x.___protruding
+				protruding = x._protruding
 
 		foreach (var e in this.getInterfaceElements(pInterface))
-			if (pProtruding)
-				e.___protruding = pProtruding
-				var protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][e.___protruding.east | (e.___protruding.west << 1) | (e.___protruding.north << 2) | (e.___protruding.south << 3)]
+			if (protruding)
+				e._protruding = protruding
+				var protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][e._protruding.east | (e._protruding.west << 1) | (e._protruding.north << 2) | (e._protruding.south << 3)]
 
 			if (e.dragOptions.draggable && e.dragOptions.parent)
 				if (protrudingDirection === 'none')
@@ -90,80 +94,110 @@ Client
 					e.dragOptions.offsets.y = { 'max': parent.dragOptions.freeze.y.max - e.yPos + e.height, 'min': e.yPos - parent.dragOptions.freeze.y.min }
 
 	onMouseMove(pDiob, pX, pY)
-		if (this.___dragging.element)
-			var realX = (this.___dragging.element.preventAutoScale ? pX * this.___screenScale.x : pX) - this.___dragging.xOff
-			var realY = (this.___dragging.element.preventAutoScale ? pY * this.___screenScale.y : pY) - this.___dragging.yOff
+		if (this._dragging.element)
+			var realX = (this._dragging.element.preventAutoScale ? pX * this._screenScale.x : pX) - this._dragging.xOff
+			var realY = (this._dragging.element.preventAutoScale ? pY * this._screenScale.y : pY) - this._dragging.yOff
 
-			if (this.___dragging.element.dragOptions?.titlebar?.xPos >= 0 && this.___dragging.element.dragOptions?.titlebar?.yPos >= 0 && this.___dragging.element.dragOptions?.titlebar?.width > 0 && this.___dragging.element.dragOptions?.titlebar?.height > 0)
-				var titleBarX = this.___dragging.element.xPos + this.___dragging.element.dragOptions.titlebar.xPos
-				var titleBarWidthX = titleBarX + this.___dragging.element.dragOptions.titlebar.width
-				var titleBarY = this.___dragging.element.yPos + this.___dragging.element.dragOptions.titlebar.yPos
-				var titleBarHeightY = titleBarY + this.___dragging.element.dragOptions.titlebar.height
-				var maxWidth = (this.___dragging.element.preventAutoScale ? this.___windowSize.width : World.getGameSize().width) - this.___dragging.element.width
-				var maxHeight = (this.___dragging.element.preventAutoScale ? this.___windowSize.height : World.getGameSize().height) - this.___dragging.element.height
+			if (this._dragging.element.dragOptions?.titlebar?.xPos >= 0 && this._dragging.element.dragOptions?.titlebar?.yPos >= 0 && this._dragging.element.dragOptions?.titlebar?.width > 0 && this._dragging.element.dragOptions?.titlebar?.height > 0)
+				var titleBarX = this._dragging.element.xPos + this._dragging.element.dragOptions.titlebar.xPos
+				var titleBarWidthX = titleBarX + this._dragging.element.dragOptions.titlebar.width
+				var titleBarY = this._dragging.element.yPos + this._dragging.element.dragOptions.titlebar.yPos
+				var titleBarHeightY = titleBarY + this._dragging.element.dragOptions.titlebar.height
+				var maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width
+				var maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height
 			else
-				var maxWidth = (this.___dragging.element.preventAutoScale ? this.___windowSize.width : World.getGameSize().width) - this.___dragging.element.width
-				var maxHeight = (this.___dragging.element.preventAutoScale ? this.___windowSize.height : World.getGameSize().height) - this.___dragging.element.height
+				var maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width
+				var maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height
 
-			this.___dragging.element.setPos(Math.clamp(realX, this.___dragging.element.dragOptions.offsets.x.min, maxWidth - this.___dragging.element.dragOptions.offsets.x.max), Math.clamp(realY, this.___dragging.element.dragOptions.offsets.y.min, maxHeight - this.___dragging.element.dragOptions.offsets.y.max))
+			this._dragging.element.setPos(Math.clamp(realX, this._dragging.element.dragOptions.offsets.x.min, maxWidth - this._dragging.element.dragOptions.offsets.x.max), Math.clamp(realY, this._dragging.element.dragOptions.offsets.y.min, maxHeight - this._dragging.element.dragOptions.offsets.y.max))
 
-			if (this.___dragging.element.dragOptions.parent)
+			if (this._dragging.element.onMove)
+				this._dragging.element.onMove(this._dragging.element.xPos, this._dragging.element.yPos)
 
-				realX += this.___dragging.xOff
-				realY += this.___dragging.yOff
+			if (this._dragging.element.dragOptions.parent)
+				realX += this._dragging.xOff
+				realY += this._dragging.yOff
+				
+				foreach (var e in this.getInterfaceElements(this._dragging.element.interfaceName))
+					if (e !== this._dragging.element)
+						if (e.parentElement === this._dragging.element.name)
+							e.reposition(realX, realY, this._dragging.element.defaultPos.x, this._dragging.element.defaultPos.y)
+							if (e.onMove)
+								e.onMove(e.xPos, e.yPos)
 
-			this.___dragging.element.onMove(realX, realY)
-
-			if (this.___dragging.element.dragOptions.beingDragged)
+			if (this._dragging.element.dragOptions.beingDragged)
 				return
 
-			this.___dragging.element.dragOptions.beingDragged = true
-			this.___dragging.element.onDragStart()
+			this._dragging.element.dragOptions.beingDragged = true
+			// automatically dynamically relayer this element when dragging it so its above everything else
+			if (this._dragging.element.onDragStart)
+				this._dragging.element.onDragStart(this._dragging.element.xPos, this._dragging.element.yPos)
+
+			foreach (var childElem in this.getInterfaceElements(this._dragging.element.interfaceName))
+				if (childElem.parentElement === this._dragging.element.name || childElem === this._dragging.element)
+					childElem.plane += MAX_PLANE
+					childElem.layer += MAX_PLANE
+					if (childElem.onDragStart)
+						childElem.onDragStart()
 
 	onMouseDown(pDiob, pX, pY, pButton)
 		if (pButton === 1)
-			this.___mousedDowned = pDiob
+			this._mousedDowned = pDiob
 			if (pDiob.baseType === 'Interface')
 				if (pDiob.dragOptions.draggable)
-					var realX = (pDiob.preventAutoScale ? pX * this.___screenScale.x : pX)
-					var realY = (pDiob.preventAutoScale ? pY * this.___screenScale.y : pY)
+					var realX = (pDiob.preventAutoScale ? pX * this._screenScale.x : pX)
+					var realY = (pDiob.preventAutoScale ? pY * this._screenScale.y : pY)
 					if (pDiob.dragOptions?.titlebar?.xPos >= 0 && pDiob.dragOptions?.titlebar?.yPos >= 0 && pDiob.dragOptions?.titlebar?.width > 0 && pDiob.dragOptions?.titlebar?.height > 0)
 						var titleBarX = pDiob.xPos + pDiob.dragOptions.titlebar.xPos
 						var titleBarWidthX = titleBarX + pDiob.dragOptions.titlebar.width
 						var titleBarY = pDiob.yPos + pDiob.dragOptions.titlebar.yPos
 						var titleBarHeightY = titleBarY + pDiob.dragOptions.titlebar.height
 						if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY)
-							this.___dragging = { 'element': pDiob, 'xOff': realX - titleBarX + pDiob.dragOptions.titlebar.xPos, 'yOff': realY - titleBarY + pDiob.dragOptions.titlebar.yPos }
+							this._dragging = { 'element': pDiob, 'xOff': realX - titleBarX + pDiob.dragOptions.titlebar.xPos, 'yOff': realY - titleBarY + pDiob.dragOptions.titlebar.yPos }
 						return
 
-					this.___dragging = { 'element': pDiob, 'xOff': realX - pDiob.xPos, 'yOff': realY - pDiob.yPos }
+					this._dragging = { 'element': pDiob, 'xOff': realX - pDiob.xPos, 'yOff': realY - pDiob.yPos }
 
 	onMouseUp(pDiob, pX, pY, pButton)
 		if (pButton === 1)
-			if (this.___dragging.element)
-				if (this.___dragging.element.dragOptions.beingDragged)
-					var realX = (this.___dragging.element.preventAutoScale ? pX * this.___screenScale.x : pX)
-					var realY = (this.___dragging.element.preventAutoScale ? pY * this.___screenScale.y : pY)
-					this.___dragging.element.onDragEnd(realX, realY)
+			if (this._dragging.element)
+				if (this._dragging.element.dragOptions.beingDragged)
+					var realX = (this._dragging.element.preventAutoScale ? pX * this._screenScale.x : pX)
+					var realY = (this._dragging.element.preventAutoScale ? pY * this._screenScale.y : pY)
+					
+					if (this._dragging.element.onDragEnd)
+						this._dragging.element.onDragEnd(this._dragging.element.xPos, this._dragging.element.yPos)
+
+					foreach (var childElem in this.getInterfaceElements(this._dragging.element.interfaceName))
+						if (childElem.parentElement === this._dragging.element.name || childElem === this._dragging.element)
+							childElem.plane -= MAX_PLANE
+							childElem.layer -= MAX_PLANE
+							if (childElem.onDragEnd)
+								childElem.onDragEnd()
+
+					this._dragging.element.dragOptions.beingDragged = false
+					this._dragging.element = null
 					return
 
-			this.___dragging.element = null
+			this._dragging.element = null
 
 Interface
 	var parentElement
 	var dragOptions = { 'draggable': false, 'beingDragged': false, 'parent': false, 'offsets': { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } }
-	var ___defaultPos = {}
-	var ___protruding = { 'east': false, 'west': false, 'north': false, 'south': false }
-	var ___defaultDisplay
-	var ___defaultSize
+	var defaultPos = {}
+	var _protruding = { 'east': false, 'west': false, 'north': false, 'south': false }
+	var defaultDisplay
+	var defaultSize
+	var interfaceName
 	scale = { 'x': 1, 'y': 1 }
 	anchor = 0.5
 
 	onNew()
-		var interface = this.getInterfaceName()
-		this.___defaultPos = { 'x': this.xPos, 'y': this.yPos }
-		this.___defaultDisplay = { 'layer': this.layer, 'plane': this.plane }
-		this.___defaultSize = { 'width': this.width, 'height': this.height }
+		this.defaultPos = { 'x': this.xPos, 'y': this.yPos }
+		this.defaultDisplay = { 'layer': this.layer, 'plane': this.plane }
+		this.defaultSize = { 'width': this.width, 'height': this.height }
+		this.interfaceName = this.getInterfaceName()
+
 		if (this.dragOptions.titlebar)
 			if (!this.dragOptions.titlebar.xPos)
 				this.dragOptions.titlebar.xPos = 0
@@ -174,7 +208,7 @@ Interface
 		if (this.dragOptions.draggable)
 			this.dragOptions.freeze = { 'x': { 'min': 0, 'max': 0, 'minWidth': 0, 'maxWidth': 0 }, 'y': { 'min': 0, 'max': 0, 'minHeight': 0, 'maxHeight': 0 }, 'updateX': false, 'updateX2': false, 'updateY': false, 'updateY2': false }
 			this.dragOptions.offsets = { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } }
-			foreach (var e in Client.getInterfaceElements(interface))
+			foreach (var e in Client.getInterfaceElements(this.interfaceName))
 				if (e.parentElement === this.name)
 					var greaterX = (e.xPos > this.xPos + this.width) && (this.dragOptions.freeze.x.max ? e.xPos > this.dragOptions.freeze.x.max : true)
 					var lesserX = (e.xPos < this.xPos) && (this.dragOptions.freeze.x.min ? e.xPos < this.dragOptions.freeze.x.min : true)
@@ -185,64 +219,58 @@ Interface
 						this.dragOptions.freeze.updateX2 = true
 						this.dragOptions.freeze.x.max = e.xPos
 						this.dragOptions.freeze.x.maxWidth = e.width
-						this.___protruding.east = true
+						this._protruding.east = true
 
 					else if (lesserX)
 						this.dragOptions.freeze.updateX = true
 						this.dragOptions.freeze.x.min = e.xPos
 						this.dragOptions.freeze.x.minWidth = e.width
-						this.___protruding.west = true
+						this._protruding.west = true
 
 					if (greaterY)
 						this.dragOptions.freeze.updateY2 = true
 						this.dragOptions.freeze.y.max = e.yPos
 						this.dragOptions.freeze.y.maxHeight = e.height
-						this.___protruding.south = true
+						this._protruding.south = true
 
 					else if (lesserY)
 						this.dragOptions.freeze.updateY = true
 						this.dragOptions.freeze.y.min = e.yPos
 						this.dragOptions.freeze.y.minHeight = e.height
-						this.___protruding.north = true
+						this._protruding.north = true
 
 	function onDragStart()
 		//...
 
-	function onDragEnd(pX, pY)
-		Client.___dragging.element.dragOptions.beingDragged = false
-		Client.___dragging.element = null
+	function onDragEnd(pX, pY)	
+		// ... 
 
 	function onMove(pX, pY)
-		var interface = this.getInterfaceName()
-		foreach (var e in Client.getInterfaceElements(interface))
-			if (e.parentElement === this.name)
-				var dX = Client.getInterfaceElement(interface, e.parentElement).___defaultPos.x
-				var dY = Client.getInterfaceElement(interface, e.parentElement).___defaultPos.y
-				e.reposition(pX, pY, dX, dY)
+		// ...
 
-	function reposition(pX, pY, dX, dY)
+	function reposition(pX, pY, defaultX, defaultY)
 		var size = {
-			'width': (this.preventAutoScale ? Client.___windowSize.width : World.getGameSize().width),
-			'height': (this.preventAutoScale ? Client.___windowSize.height : World.getGameSize().height)
+			'width': (this.preventAutoScale ? Client._windowSize.width : Client._gameSize.width),
+			'height': (this.preventAutoScale ? Client._windowSize.height : Client._gameSize.height)
 		}
-		var xOff = Client.___dragging.xOff
-		var yOff = Client.___dragging.yOff
-		var protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][this.___protruding.east | (this.___protruding.west << 1) | (this.___protruding.north << 2) | (this.___protruding.south << 3)]
+		var xOff = Client._dragging.xOff
+		var yOff = Client._dragging.yOff
+		var protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][this._protruding.east | (this._protruding.west << 1) | (this._protruding.north << 2) | (this._protruding.south << 3)]
 
 		if (protrudingDirection === 'none')
-			this.setPos(Math.clamp(pX - xOff + this.___defaultPos.x - dX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.owner.width + this.dragOptions.offsets.x.min), Math.clamp(pY - yOff + this.___defaultPos.y - dY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.owner.height + this.dragOptions.offsets.y.min))
+			this.setPos(Math.clamp(pX - xOff + this.defaultPos.x - defaultX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.owner.width + this.dragOptions.offsets.x.min), Math.clamp(pY - yOff + this.defaultPos.y - defaultY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.owner.height + this.dragOptions.offsets.y.min))
 			return
 
 		if (protrudingDirection === 'n' || protrudingDirection === 's' || protrudingDirection === 'w' || protrudingDirection === 'wn' || protrudingDirection === 'ws' || protrudingDirection === 'sn' || protrudingDirection === 'wns')
-			this.xPos = Math.clamp(pX - xOff + this.___defaultPos.x - dX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.owner.width + this.dragOptions.offsets.x.max)
+			this.xPos = Math.clamp(pX - xOff + this.defaultPos.x - defaultX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.owner.width + this.dragOptions.offsets.x.max)
 
 		if (protrudingDirection === 'e' || protrudingDirection === 'ew' || protrudingDirection === 'es' || protrudingDirection === 'en' || protrudingDirection === 'ewn' || protrudingDirection === 'ews' || protrudingDirection === 'ewns' || protrudingDirection === 'ens')
-			this.xPos = Math.clamp(pX - xOff + this.___defaultPos.x - dX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.offsets.x.max)
+			this.xPos = Math.clamp(pX - xOff + this.defaultPos.x - defaultX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.offsets.x.max)
 
 		if (protrudingDirection === 'n' || protrudingDirection === 'e' || protrudingDirection === 'w' || protrudingDirection === 'wn' || protrudingDirection === 'ew' || protrudingDirection === 'en' || protrudingDirection === 'ewn')
-			this.yPos = Math.clamp(pY - yOff + this.___defaultPos.y - dY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.owner.height + this.dragOptions.offsets.y.max)
+			this.yPos = Math.clamp(pY - yOff + this.defaultPos.y - defaultY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.owner.height + this.dragOptions.offsets.y.max)
 
 		if (protrudingDirection === 's' || protrudingDirection === 'ws' || protrudingDirection === 'sn' || protrudingDirection === 'es' || protrudingDirection === 'ews' || protrudingDirection === 'ewns' || protrudingDirection === 'ens' || protrudingDirection === 'wns')
-			this.yPos = Math.clamp(pY - yOff + this.___defaultPos.y - dY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.offsets.y.max)
+			this.yPos = Math.clamp(pY - yOff + this.defaultPos.y - defaultY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.offsets.y.max)
 
 #END CLIENTCODE
