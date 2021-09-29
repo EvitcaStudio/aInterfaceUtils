@@ -239,13 +239,13 @@ Interface
 						this.dragOptions.freeze.y.minHeight = e.height
 						this._protruding.north = true
 
-	function onDragStart()
+	// function onDragStart()
 		//...
 
-	function onDragEnd(pX, pY)	
+	// function onDragEnd(pX, pY)	
 		// ... 
 
-	function onMove(pX, pY)
+	// function onMove(pX, pY)
 		// ...
 
 	function reposition(pX, pY, defaultX, defaultY)
