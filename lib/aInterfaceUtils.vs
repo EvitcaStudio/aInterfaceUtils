@@ -248,6 +248,11 @@ Interface
 	// function onMove(pX, pY)
 		// ...
 
+	function isMousedDown()
+		if (Client._mousedDowned === this)
+			return true
+		return false
+
 	function reposition(pX, pY, defaultX, defaultY)
 		var size = {
 			'width': (this.preventAutoScale ? Client._windowSize.width : Client._gameSize.width),
