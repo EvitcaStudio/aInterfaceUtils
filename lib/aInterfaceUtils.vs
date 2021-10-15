@@ -9,6 +9,8 @@ Client
 	var _screenScale = { 'x': 1, 'y': 1 }
 	var _dragging = { 'element': null, 'xOff': 0, 'yOff': 0 }
 	var _mousedDowned
+	// a var to check if the client is dragging something around currently READ ONLY
+	var dragging
 
 	onNew()
 		this._windowSize = this.getWindowSize()
@@ -153,10 +155,16 @@ Client
 						var titleBarY = pDiob.yPos + pDiob.dragOptions.titlebar.yPos
 						var titleBarHeightY = titleBarY + pDiob.dragOptions.titlebar.height
 						if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY)
-							this._dragging = { 'element': pDiob, 'xOff': realX - titleBarX + pDiob.dragOptions.titlebar.xPos, 'yOff': realY - titleBarY + pDiob.dragOptions.titlebar.yPos }
+							this._dragging.element = pDiob
+							this._dragging.xOff = realX - titleBarX + pDiob.dragOptions.titlebar.xPos
+							this._dragging.yOff = realY - titleBarY + pDiob.dragOptions.titlebar.yPos
+							this.dragging = true
 						return
 
-					this._dragging = { 'element': pDiob, 'xOff': realX - pDiob.xPos, 'yOff': realY - pDiob.yPos }
+					this._dragging.element = pDiob
+					this._dragging.xOff = realX - pDiob.xPos
+					this._dragging.yOff = realY - pDiob.yPos
+					this.dragging = true
 
 	onMouseUp(pDiob, pX, pY, pButton)
 		if (pButton === 1)
@@ -177,17 +185,20 @@ Client
 
 					this._dragging.element.dragOptions.beingDragged = false
 					this._dragging.element = null
+					this.dragging = false
 					return
 
 			this._dragging.element = null
+			this.dragging = false
 
 Interface
 	var parentElement
 	var dragOptions = { 'draggable': false, 'beingDragged': false, 'parent': false, 'offsets': { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } }
-	var defaultPos = {}
 	var _protruding = { 'east': false, 'west': false, 'north': false, 'south': false }
+	var defaultPos = {}
 	var defaultDisplay
 	var defaultSize
+	var defaultScreenPercentage = { 'x': 0, 'y': 0 }
 	var interfaceName
 	scale = { 'x': 1, 'y': 1 }
 	anchor = 0.5
@@ -196,6 +207,7 @@ Interface
 		this.defaultPos = { 'x': this.xPos, 'y': this.yPos }
 		this.defaultDisplay = { 'layer': this.layer, 'plane': this.plane }
 		this.defaultSize = { 'width': this.width, 'height': this.height }
+		this.defaultScreenPercentage = { 'x': ((100 * this.xPos) / Client._gameSize.width), 'y': ((100 * this.yPos) / Client._gameSize.height) }
 		this.interfaceName = this.getInterfaceName()
 
 		if (this.dragOptions.titlebar)
