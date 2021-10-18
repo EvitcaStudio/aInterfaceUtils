@@ -136,11 +136,12 @@ Client
 				this._dragging.element.onDragStart(this._dragging.element.xPos, this._dragging.element.yPos)
 
 			foreach (var childElem in this.getInterfaceElements(this._dragging.element.interfaceName))
-				if (childElem.parentElement === this._dragging.element.name)
-					childElem.plane += MAX_PLANE
-					childElem.layer += MAX_PLANE
-					if (childElem.onDragStart)
-						childElem.onDragStart()
+				if (childElem !== this._dragging.element)
+					if (childElem.parentElement === this._dragging.element.name)
+						childElem.plane += MAX_PLANE
+						childElem.layer += MAX_PLANE
+						if (childElem.onDragStart)
+							childElem.onDragStart()
 
 	onMouseDown(pDiob, pX, pY, pButton)
 		if (pButton === 1)
@@ -177,11 +178,12 @@ Client
 						this._dragging.element.onDragEnd(this._dragging.element.xPos, this._dragging.element.yPos)
 
 					foreach (var childElem in this.getInterfaceElements(this._dragging.element.interfaceName))
-						if (childElem.parentElement === this._dragging.element.name)
-							childElem.plane -= MAX_PLANE
-							childElem.layer -= MAX_PLANE
-							if (childElem.onDragEnd)
-								childElem.onDragEnd()
+						if (childElem !== this._dragging.element)
+							if (childElem.parentElement === this._dragging.element.name)
+								childElem.plane -= MAX_PLANE
+								childElem.layer -= MAX_PLANE
+								if (childElem.onDragEnd)
+									childElem.onDragEnd()
 
 					this._dragging.element.dragOptions.beingDragged = false
 					this._dragging.element = null
