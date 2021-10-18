@@ -136,7 +136,7 @@ Client
 				this._dragging.element.onDragStart(this._dragging.element.xPos, this._dragging.element.yPos)
 
 			foreach (var childElem in this.getInterfaceElements(this._dragging.element.interfaceName))
-				if (childElem.parentElement === this._dragging.element.name || childElem === this._dragging.element)
+				if (childElem.parentElement === this._dragging.element.name)
 					childElem.plane += MAX_PLANE
 					childElem.layer += MAX_PLANE
 					if (childElem.onDragStart)
@@ -177,7 +177,7 @@ Client
 						this._dragging.element.onDragEnd(this._dragging.element.xPos, this._dragging.element.yPos)
 
 					foreach (var childElem in this.getInterfaceElements(this._dragging.element.interfaceName))
-						if (childElem.parentElement === this._dragging.element.name || childElem === this._dragging.element)
+						if (childElem.parentElement === this._dragging.element.name)
 							childElem.plane -= MAX_PLANE
 							childElem.layer -= MAX_PLANE
 							if (childElem.onDragEnd)
@@ -192,14 +192,14 @@ Client
 			this.dragging = false
 
 Interface
-	var parentElement
-	var dragOptions = { 'draggable': false, 'beingDragged': false, 'parent': false, 'offsets': { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } }
 	var _protruding = { 'east': false, 'west': false, 'north': false, 'south': false }
-	var defaultPos = {}
-	var defaultDisplay
-	var defaultSize
+	var dragOptions = { 'draggable': false, 'beingDragged': false, 'parent': false, 'offsets': { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } }
+	var defaultPos = { 'x': 0, 'y': 0 }
+	var defaultDisplay = { 'plane': 0, 'layer': 1 }
+	var defaultSize = { 'x': 32, 'y': 32 }
 	var defaultScreenPercentage = { 'x': 0, 'y': 0 }
-	var interfaceName
+	var interfaceName = ''
+	var parentElement
 	scale = { 'x': 1, 'y': 1 }
 	anchor = 0.5
 
@@ -250,15 +250,6 @@ Interface
 						this.dragOptions.freeze.y.min = e.yPos
 						this.dragOptions.freeze.y.minHeight = e.height
 						this._protruding.north = true
-
-	// function onDragStart()
-		//...
-
-	// function onDragEnd(pX, pY)	
-		// ... 
-
-	// function onMove(pX, pY)
-		// ...
 
 	function isMousedDown()
 		if (Client._mousedDowned === this)
