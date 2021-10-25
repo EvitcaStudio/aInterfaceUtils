@@ -22,6 +22,8 @@ Client
 		this._windowSize.width = pWidth
 		this._windowSize.height = pHeight
 		this.getScreenScale(this._screenScale)
+		if (this.___EVITCA_aInventory)
+			this.aInventory.outlineFilter.thickness = this.aInventory.outlineDefaultThickness * JS.mainM.mapScaleWidth
 
 	onInterfaceLoaded(pInterface)
 		var protruding
