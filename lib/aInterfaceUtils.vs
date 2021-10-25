@@ -121,7 +121,7 @@ Client
 			if (this._dragging.element.dragOptions.parent)
 				realX += this._dragging.xOff
 				realY += this._dragging.yOff
-				
+
 				foreach (var e in this.getInterfaceElements(this._dragging.element.interfaceName))
 					if (e !== this._dragging.element)
 						if (e.parentElement === this._dragging.element.name)
@@ -136,6 +136,9 @@ Client
 			// automatically dynamically relayer this element when dragging it so its above everything else
 			if (this._dragging.element.onDragStart)
 				this._dragging.element.onDragStart(this._dragging.element.xPos, this._dragging.element.yPos)
+
+			this._dragging.element.plane += MAX_PLANE
+			this._dragging.element.layer += MAX_PLANE
 
 			foreach (var childElem in this.getInterfaceElements(this._dragging.element.interfaceName))
 				if (childElem !== this._dragging.element)
@@ -178,6 +181,9 @@ Client
 					
 					if (this._dragging.element.onDragEnd)
 						this._dragging.element.onDragEnd(this._dragging.element.xPos, this._dragging.element.yPos)
+
+					this._dragging.element.plane -= MAX_PLANE
+					this._dragging.element.layer -= MAX_PLANE
 
 					foreach (var childElem in this.getInterfaceElements(this._dragging.element.interfaceName))
 						if (childElem !== this._dragging.element)
@@ -285,5 +291,5 @@ Diob
 		if (Client._mousedDowned === this)
 			return true
 		return false
-		
+
 #END CLIENTCODE
