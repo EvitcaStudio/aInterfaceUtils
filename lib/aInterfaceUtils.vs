@@ -255,11 +255,6 @@ Interface
 						this.dragOptions.freeze.y.minHeight = e.height
 						this._protruding.north = true
 
-	function isMousedDown()
-		if (Client._mousedDowned === this)
-			return true
-		return false
-
 	function reposition(pX, pY, defaultX, defaultY)
 		var size = {
 			'width': (this.preventAutoScale ? Client._windowSize.width : Client._gameSize.width),
@@ -285,4 +280,10 @@ Interface
 		if (protrudingDirection === 's' || protrudingDirection === 'ws' || protrudingDirection === 'sn' || protrudingDirection === 'es' || protrudingDirection === 'ews' || protrudingDirection === 'ewns' || protrudingDirection === 'ens' || protrudingDirection === 'wns')
 			this.yPos = Math.clamp(pY - yOff + this.defaultPos.y - defaultY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.offsets.y.max)
 
+Diob
+	function isMousedDown()
+		if (Client._mousedDowned === this)
+			return true
+		return false
+		
 #END CLIENTCODE
