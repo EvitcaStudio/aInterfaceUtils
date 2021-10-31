@@ -105,6 +105,7 @@
 		alertMenu.height = 185;
 		alertMenu.layer = MAX_PLANE;
 		alertMenu.plane = MAX_PLANE;
+		alertMenu.alpha = 0.8;
 		alertMenu.interfaceType = 'WebBox';
 		alertMenu.itemsInQueue = 0;
 		alertMenu.queuedAlerts = {};
@@ -146,10 +147,12 @@
 		alertMenuOkButton.text = '<div class="aInterfaceUtils_dialog_button">Ok</div>';
 
 		alertMenuOkButton.onMouseEnter = function(pClient, pX, pY) {
+			pClient.setMouseCursor('pointer');
 			this.alpha = 0.8;
 		}
 
 		alertMenuOkButton.onMouseExit = function(pClient, pX, pY) {
+			pClient.setMouseCursor('');
 			this.alpha = 1;
 		}
 
@@ -178,6 +181,7 @@
 		inputMenu.height = 185;
 		inputMenu.layer = MAX_PLANE;
 		inputMenu.plane = MAX_PLANE;
+		inputMenu.alpha = 0.8;
 		inputMenu.interfaceType = 'WebBox';
 		inputMenu.inputValue = false;
 		inputMenu.closing = false;
@@ -262,10 +266,12 @@
 			}
 		}
 		inputMenuOkButton.onMouseEnter = function(pClient, pX, pY) {
+			pClient.setMouseCursor('pointer');
 			this.alpha = 0.8;
 		}
 
 		inputMenuOkButton.onMouseExit = function(pClient, pX, pY) {
+			pClient.setMouseCursor('');
 			this.alpha = 1;
 		}
 
@@ -287,6 +293,7 @@
 		confirmMenu.height = 185;
 		confirmMenu.layer = MAX_PLANE;
 		confirmMenu.plane = MAX_PLANE;
+		confirmMenu.alpha = 0.8;
 		confirmMenu.interfaceType = 'WebBox';
 		confirmMenu.itemsInQueue = 0;
 		confirmMenu.queuedDialogs = {};
@@ -333,10 +340,12 @@
 		};
 		confirmMenuYesButton.text = '<div class="aInterfaceUtils_dialog_button">Yes</div>';
 		confirmMenuYesButton.onMouseEnter = function(pClient, pX, pY) {
+			pClient.setMouseCursor('pointer');
 			this.alpha = 0.8;
 		}
 
 		confirmMenuYesButton.onMouseExit = function(pClient, pX, pY) {
+			pClient.setMouseCursor('');
 			this.alpha = 1;
 		}
 
@@ -370,10 +379,12 @@
 		};
 		confirmMenuNoButton.text = '<div class="aInterfaceUtils_dialog_button">No</div>';
 		confirmMenuNoButton.onMouseEnter = function(pClient, pX, pY) {
+			pClient.setMouseCursor('pointer');
 			this.alpha = 0.8;
 		}
 
 		confirmMenuNoButton.onMouseExit = function(pClient, pX, pY) {
+			pClient.setMouseCursor('');
 			this.alpha = 1;
 		}
 
