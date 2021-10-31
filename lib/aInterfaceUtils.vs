@@ -406,7 +406,7 @@
 		VS.Client.addInterfaceElement(confirmMenuNoButton, 'aInterfaceUtils_confirm_interface', 'confirm_menu_no_button', 486, 315);
 		VS.Client.onInterfaceLoaded('aInterfaceUtils_confirm_interface');
 
-		aInterfaceUtils.alert = function(pMessage, pTitle, pCallback, pParameters) {
+		aInterfaceUtils.alert = function(pTitle, pMessage, pCallback, pParameters) {
 			let alertMenu = VS.Client.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
 			let num;
 			let message;
@@ -539,7 +539,7 @@
 			/* VS.Client.setMacroAtlas(inputMenu.storedMacroAtlas); */
 		}
 
-		aInterfaceUtils.confirm = function(pMessage, pTitle, pCallback, pParameters) {
+		aInterfaceUtils.confirm = function(pTitle, pMessage, pCallback, pParameters) {
 			let confirmMenu = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
 			let num;
 			let message;
