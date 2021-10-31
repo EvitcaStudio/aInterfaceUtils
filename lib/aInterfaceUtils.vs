@@ -4,16 +4,598 @@
 
 (function() {
 	let aInterfaceUtils = {};
+	let libraryBuilt = false;
 	let engineWaitId = setInterval(function() {
-		if (VS.World.global) {
-			VS.Type.setVariables('Client', { 'aInterfaceUtils': aInterfaceUtils, '___EVITCA_aInterfaceUtils': true });
-			clearInterval(engineWaitId);
+		if (VS.World.global && !libraryBuilt) {
 			buildInterfaceUtils(aInterfaceUtils);
+			libraryBuilt = true;
+		}
+
+		if (VS.Client && libraryBuilt) {
+			clearInterval(engineWaitId);
+			buildDialog(aInterfaceUtils);
 		}
 	});
 
+	let buildDialog = function(aInterfaceUtils) {
+		const MAX_PLANE = 1999998;
+		VS.Client.aInterfaceUtils = aInterfaceUtils;
+		// attach onMouseClick event to client
+		if (!aInterfaceUtils.onMouseClickSet) {
+			aInterfaceUtils._onMouseClick = VS.Client.onMouseClick;
+			aInterfaceUtils.onMouseClickSet = true;
+			VS.Client.onMouseClick = function(pDiob, pX, pY, pButton) {
+				if (this.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu').shown) {
+					if (pButton === 1) {
+						if (!pDiob || pDiob.baseType !== 'Interface') {
+							VS.World.global.aInterfaceUtils.inInput = false;
+							/* this.setMacroAtlas(this.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu').storedMacroAtlas); */
+							this.setFocus();
+						}
+					}
+				}
+				if (VS.World.global.aInterfaceUtils._onMouseClick) {
+					VS.World.global.aInterfaceUtils._onMouseClick.apply(this, arguments);
+				}
+			}
+		}
+
+		// toggle the debug mode, which allows descriptive text to be shown when things of notice happen
+		aInterfaceUtils.toggleDebug = function() {
+			this.debugging = (this.debugging ? false : true);
+		}
+/* 		
+		VS.Macro.newMacroAtlas('aInterfaceUtils_alert_macro');
+		VS.Macro.newMacroAtlas('aInterfaceUtils_input_macro');
+		VS.Macro.newMacroAtlas('aInterfaceUtils_confirm_macro');
+
+		// alert
+		VS.Client.addCommand('closeAlertMenu', function() {
+			VS.World.global.aInterfaceUtils.closeAlertMenu();
+		});
+		VS.Client.addCommand('leftArrowSelectAlert', function() {
+
+		});
+		VS.Client.addCommand('rightArrowSelectAlert', rightArrowSelectAlert = function() {
+			
+		});
+		// input
+		VS.Client.addCommand('closeInputMenu', function() {
+			VS.World.global.aInterfaceUtils.closeInputMenu();
+		});
+		VS.Client.addCommand('leftArrowSelectInput', function() {
+
+		});
+		VS.Client.addCommand('rightArrowSelectInput', function() {
+			
+		});
+		// confirm
+		VS.Client.addCommand('closeConfirmMenu', function() {
+			VS.World.global.aInterfaceUtils.closeConfirmMenu();
+		});
+		VS.Client.addCommand('leftArrowSelectConfirm', function() {
+
+		});
+		VS.Client.addCommand('rightArrowSelectConfirm', function() {
+			
+		});
+
+		// alert
+		VS.Macro.newMacro('closeAlertMenu', 'aInterfaceUtils_alert_macro', 'Enter', 'closeAlertMenu');
+		VS.Macro.newMacro('leftArrowSelectAlert', 'aInterfaceUtils_alert_macro', 'ArrowLeft', 'leftArrowSelectAlert');
+		VS.Macro.newMacro('rightArrowSelectAlert', 'aInterfaceUtils_alert_macro', 'ArrowRight', 'rightArrowSelectAlert');
+		// input
+		VS.Macro.newMacro('closeInputMenu', 'aInterfaceUtils_input_macro', 'Enter', 'closeInputMenu');
+		VS.Macro.newMacro('leftArrowSelectInput', 'aInterfaceUtils_input_macro', 'ArrowLeft', 'leftArrowSelectInput');
+		VS.Macro.newMacro('rightArrowSelectInput', 'aInterfaceUtils_input_macro', 'ArrowRight', 'rightArrowSelectInput');
+		// confirm
+		VS.Macro.newMacro('closeConfirmMenu', 'aInterfaceUtils_confirm_macro', 'Enter', 'closeConfirmMenu');
+		VS.Macro.newMacro('leftArrowSelectConfirm', 'aInterfaceUtils_confirm_macro', 'ArrowLeft', 'leftArrowSelectConfirm');
+		VS.Macro.newMacro('rightArrowSelectConfirm', 'aInterfaceUtils_confirm_macro', 'ArrowRight', 'rightArrowSelectConfirm');
+ */
+		VS.Client.createInterface('aInterfaceUtils_alert_interface');
+		VS.Client.createInterface('aInterfaceUtils_input_interface');
+		VS.Client.createInterface('aInterfaceUtils_confirm_interface');
+
+		// alert menu
+		let alertMenu = VS.newDiob('Interface');
+		alertMenu.atlasName = 'aInterfaceUtils_atlas';
+		alertMenu.iconName = 'dialog_menu';
+		alertMenu.width = 380;
+		alertMenu.height = 185;
+		alertMenu.layer = MAX_PLANE;
+		alertMenu.plane = MAX_PLANE;
+		alertMenu.interfaceType = 'WebBox';
+		alertMenu.itemsInQueue = 0;
+		alertMenu.queuedAlerts = {};
+		alertMenu.queueTracker = 0;
+		alertMenu.name = 'alert_menu';
+		alertMenu.dragOptions = { 'draggable': true, 'parent': true, 'titlebar': { 'width': 380, 'height': 34, 'xPos': 1, 'yPos': 0 }};
+		alertMenu.textStyle = { 'vPadding': 7 };
+
+		alertMenu.onFocus = function(pClient) {
+			pClient.toggleMacroCapture(false);
+		}
+		alertMenu.onUnfocus = function(pClient) {
+			pClient.toggleMacroCapture(true);
+		}
+		alertMenu.onShow = function(pClient) {
+			for (let elem of pClient.getInterfaceElements('aInterfaceUtils_alert_interface')) {
+				elem.setPos(elem.defaultPos.x, elem.defaultPos.y);
+			}
+			pClient.setFocus(this)
+			this.super('onShow', arguments);
+		}
+		alertMenu.onHide = function(pClient) {
+			pClient.setFocus();
+			this.super('onHide', arguments);
+		}
+
+		// alert ok button
+		let alertMenuOkButton = VS.newDiob('Interface');
+		alertMenuOkButton.atlasName = 'aInterfaceUtils_atlas';
+		alertMenuOkButton.iconName = 'dialog_button';
+		alertMenuOkButton.interfaceType = 'WebBox';
+		alertMenuOkButton.width = 85;
+		alertMenuOkButton.height = 27;
+		alertMenuOkButton.layer = MAX_PLANE;
+		alertMenuOkButton.plane = MAX_PLANE;
+		alertMenuOkButton.interfaceType = 'WebBox';
+		alertMenuOkButton.textStyle = { 'vPadding': 7 };
+		alertMenuOkButton.parentElement = 'alert_menu';
+		alertMenuOkButton.text = '<div class="aInterfaceUtils_dialog_button">Ok</div>';
+
+		alertMenuOkButton.onMouseEnter = function(pClient, pX, pY) {
+			this.alpha = 0.8;
+		}
+
+		alertMenuOkButton.onMouseExit = function(pClient, pX, pY) {
+			this.alpha = 1;
+		}
+
+		alertMenuOkButton.onMouseClick = function(pClient, pX, pY, pButton) {
+			if (pButton === 1)
+				var alertMenuElem = pClient.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
+				if (alertMenuElem.callback) {
+					if (alertMenuElem.parameters) {
+						alertMenuElem.callback(...alertMenuElem.parameters);
+					} else {
+						alertMenuElem.callback();
+					}
+				}
+				aInterfaceUtils.closeAlertMenu();
+		}
+
+		VS.Client.addInterfaceElement(alertMenu, 'aInterfaceUtils_alert_interface', 'alert_menu', 287, 178);
+		VS.Client.addInterfaceElement(alertMenuOkButton, 'aInterfaceUtils_alert_interface', 'alert_menu_ok_button', 438, 312);
+		VS.Client.onInterfaceLoaded('aInterfaceUtils_alert_interface');
+
+		// input menu
+		let inputMenu = VS.newDiob('Interface');
+		inputMenu.atlasName = 'aInterfaceUtils_atlas';
+		inputMenu.iconName = 'dialog_menu';
+		inputMenu.width = 380;
+		inputMenu.height = 185;
+		inputMenu.layer = MAX_PLANE;
+		inputMenu.plane = MAX_PLANE;
+		inputMenu.interfaceType = 'WebBox';
+		inputMenu.inputValue = false;
+		inputMenu.closing = false;
+		/* inputMenu.storedMacroAtlas = ''; */
+		inputMenu.itemsInQueue = 0;
+		inputMenu.queuedInputs = {};
+		inputMenu.queueTracker = 0;
+		inputMenu.name = 'input_menu';
+		inputMenu.dragOptions = { 'draggable': true, 'parent': true, 'titlebar': { 'width': 380, 'height': 34, 'xPos': 1, 'yPos': 0 }};
+		inputMenu.textStyle = {
+			'fontFamily': 'Arial',
+			'fontSize': 14,
+			'vPadding': 36,
+			'padding': 13,
+			'fill': '#ffffff'
+		}
+
+		inputMenu.onFocus = function(pClient) {
+			/* this.storedMacroAtlas = pClient._vy_macroAtlas; */
+			pClient.toggleMacroCapture(false);
+			pClient.aInterfaceUtils.inInput = true;
+			/* pClient.setMacroAtlas('aInterfaceUtils_input_macro'); */
+		}
+
+		inputMenu.onUnfocus = function(pClient) {
+			pClient.toggleMacroCapture(true);
+			pClient.aInterfaceUtils.inInput = false;
+		}
+
+		inputMenu.onShow = function(pClient) {
+			for (let elem of pClient.getInterfaceElements('aInterfaceUtils_input_interface')) {
+				elem.setPos(elem.defaultPos.x, elem.defaultPos.y);
+			}
+			pClient.setFocus(this);
+			this.super('onShow', arguments);
+		}
+
+		inputMenu.onHide = function(pClient) {
+			pClient.setFocus();
+			this.super('onHide', arguments);
+		}
+
+		// input
+		let inputMenuInput = VS.newDiob('Interface');
+		inputMenuInput.atlasName = 'aInterfaceUtils_atlas';
+		inputMenuInput.iconName = 'dialog_input';
+		inputMenuInput.width = 352;
+		inputMenuInput.height = 25;
+		inputMenuInput.layer = MAX_PLANE;
+		inputMenuInput.plane = MAX_PLANE;
+		inputMenuInput.interfaceType = 'CommandInput';
+		inputMenuInput.parentElement = 'input_menu';
+		inputMenuInput.textStyle = { 'hPadding': 4, 'fill': '#fff' };
+		inputMenuInput.onExecute = function(pClient) {
+			let inputMenuOkButton = pClient.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_ok_button')
+			inputMenuOkButton.close(pClient)
+		}
+
+		// input ok button
+		let inputMenuOkButton = VS.newDiob('Interface');
+		inputMenuOkButton.atlasName = 'aInterfaceUtils_atlas';
+		inputMenuOkButton.iconName = 'dialog_button';
+		inputMenuOkButton.width = 85;
+		inputMenuOkButton.height = 27;
+		inputMenuOkButton.layer = MAX_PLANE;
+		inputMenuOkButton.plane = MAX_PLANE;
+		inputMenuOkButton.interfaceType = 'WebBox';
+		inputMenuOkButton.parentElement = 'input_menu';
+		inputMenuOkButton.textStyle = { 'vPadding': 7 };
+		inputMenuOkButton.text = '<div class="aInterfaceUtils_dialog_button">Ok</div>';
+		inputMenuOkButton.close = function(pClient) {
+			let inputMenu = pClient.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
+			aInterfaceUtils.closeInputMenu();
+			if (inputMenu.closing) {
+				if (inputMenu.callback) {
+					if (inputMenu.parameters) {
+						inputMenu.callback(inputMenu.inputValue, ...inputMenu.parameters);
+					} else {
+						inputMenu.callback(inputMenu.inputValue);
+					}
+				}
+			}
+		}
+		inputMenuOkButton.onMouseEnter = function(pClient, pX, pY) {
+			this.alpha = 0.8;
+		}
+
+		inputMenuOkButton.onMouseExit = function(pClient, pX, pY) {
+			this.alpha = 1;
+		}
+
+		inputMenuOkButton.onMouseClick = function(pClient, pX, pY, pButton) {
+			if (pButton === 1) {
+				this.close(pClient)
+			}
+		}
+		VS.Client.addInterfaceElement(inputMenu, 'aInterfaceUtils_input_interface', 'input_menu', 287, 178);
+		VS.Client.addInterfaceElement(inputMenuInput, 'aInterfaceUtils_input_interface', 'input_menu_input', 304, 258);
+		VS.Client.addInterfaceElement(inputMenuOkButton, 'aInterfaceUtils_input_interface', 'input_menu_ok_button', 438, 312);
+		VS.Client.onInterfaceLoaded('aInterfaceUtils_input_interface');
+
+		// confirm menu
+		let confirmMenu = VS.newDiob('Interface');
+		confirmMenu.atlasName = 'aInterfaceUtils_atlas';
+		confirmMenu.iconName = 'dialog_menu';
+		confirmMenu.width = 380;
+		confirmMenu.height = 185;
+		confirmMenu.layer = MAX_PLANE;
+		confirmMenu.plane = MAX_PLANE;
+		confirmMenu.interfaceType = 'WebBox';
+		confirmMenu.itemsInQueue = 0;
+		confirmMenu.queuedDialogs = {};
+		confirmMenu.queueTracker = 0;
+		confirmMenu.textStyle = {
+			'fontFamily': 'Arial',
+			'fontSize': 14,
+			'vPadding': 7,
+			'fill': '#ffffff',
+		};
+		confirmMenu.name = 'confirm_menu';
+		confirmMenu.dragOptions = { 'draggable': true, 'parent': true, 'titlebar': { 'width': 380, 'height': 34, 'xPos': 1, 'yPos': 0 }};
+		confirmMenu.onFocus = function(pClient) {
+			pClient.toggleMacroCapture(false);
+		}
+		confirmMenu.onUnfocus = function(pClient) {
+			pClient.toggleMacroCapture(true);
+		}
+		confirmMenu.onShow = function(pClient) {
+			for (let elem of pClient.getInterfaceElements('aInterfaceUtils_confirm_interface')) {
+				elem.setPos(elem.defaultPos.x, elem.defaultPos.y);
+			}
+			pClient.setFocus(this);
+			this.super('onShow', arguments);
+		}
+		confirmMenu.onHide = function(pClient) {
+			pClient.setFocus();
+			this.super('onHide', arguments);
+		}
+		// confirm yes button
+		let confirmMenuYesButton = VS.newDiob('Interface');
+		confirmMenuYesButton.atlasName = 'aInterfaceUtils_atlas';
+		confirmMenuYesButton.iconName = 'dialog_button';
+		confirmMenuYesButton.width = 85;
+		confirmMenuYesButton.height = 27;
+		confirmMenuYesButton.layer = MAX_PLANE;
+		confirmMenuYesButton.plane = MAX_PLANE;
+		confirmMenuYesButton.interfaceType = 'WebBox';
+		confirmMenuYesButton.parentElement = 'confirm_menu';
+		confirmMenuYesButton.textStyle = { 
+			'fontSize': 11, 
+			'fill': '#fff', 
+			'vPadding': 7 
+		};
+		confirmMenuYesButton.text = '<div class="aInterfaceUtils_dialog_button">Yes</div>';
+		confirmMenuYesButton.onMouseEnter = function(pClient, pX, pY) {
+			this.alpha = 0.8;
+		}
+
+		confirmMenuYesButton.onMouseExit = function(pClient, pX, pY) {
+			this.alpha = 1;
+		}
+
+		confirmMenuYesButton.onMouseClick = function(pClient, pX, pY, pButton) {
+			if (pButton === 1) {
+				let confirmMenu = pClient.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
+				if (confirmMenu.callback) {
+					if (confirmMenu.parameters) {
+						confirmMenu.callback(true, ...confirmMenu.parameters);
+					} else {
+						confirmMenu.callback(true);
+					}
+				}
+				aInterfaceUtils.closeConfirmMenu();
+			}
+		}
+		// confirm no button
+		let confirmMenuNoButton = VS.newDiob('Interface');
+		confirmMenuNoButton.atlasName = 'aInterfaceUtils_atlas';
+		confirmMenuNoButton.iconName = 'dialog_button';
+		confirmMenuNoButton.width = 85;
+		confirmMenuNoButton.height = 27;
+		confirmMenuNoButton.layer = MAX_PLANE;
+		confirmMenuNoButton.plane = MAX_PLANE;
+		confirmMenuNoButton.interfaceType = 'WebBox';
+		confirmMenuNoButton.parentElement = 'confirm_menu';
+		confirmMenuNoButton.textStyle = { 
+			'fontSize': 11, 
+			'fill': '#fff', 
+			'vPadding': 7 
+		};
+		confirmMenuNoButton.text = '<div class="aInterfaceUtils_dialog_button">No</div>';
+		confirmMenuNoButton.onMouseEnter = function(pClient, pX, pY) {
+			this.alpha = 0.8;
+		}
+
+		confirmMenuNoButton.onMouseExit = function(pClient, pX, pY) {
+			this.alpha = 1;
+		}
+
+		confirmMenuNoButton.onMouseClick = function(pClient, pX, pY, pButton) {
+			if (pButton === 1) {
+				let confirmMenu = pClient.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
+				if (confirmMenu.callback) {
+					if (confirmMenu.parameters) {
+						confirmMenu.callback(false, ...confirmMenu.parameters);
+					} else {
+						confirmMenu.callback(false);
+					}
+				}
+				aInterfaceUtils.closeConfirmMenu();
+			}
+		}
+		VS.Client.addInterfaceElement(confirmMenu, 'aInterfaceUtils_confirm_interface', 'confirm_menu', 287, 178);
+		VS.Client.addInterfaceElement(confirmMenuYesButton, 'aInterfaceUtils_confirm_interface', 'confirm_menu_yes_button', 396, 315);
+		VS.Client.addInterfaceElement(confirmMenuNoButton, 'aInterfaceUtils_confirm_interface', 'confirm_menu_no_button', 486, 315);
+		VS.Client.onInterfaceLoaded('aInterfaceUtils_confirm_interface');
+
+		aInterfaceUtils.alert = function(pMessage, pTitle, pCallback, pParameters) {
+			let alertMenu = VS.Client.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
+			let num;
+			let message;
+			let title;
+			let callback;
+			let parameters;
+
+			if (alertMenu.shown) {
+				alertMenu.itemsInQueue++;
+				num = alertMenu.itemsInQueue;
+				message = 'message' + num;
+				title = 'title' + num;
+				callback = 'callback' + num;
+				parameters = 'parameters' + num;
+				alertMenu.queuedAlerts[message] = pMessage;
+				alertMenu.queuedAlerts[title] = pTitle;
+				alertMenu.queuedAlerts[callback] = pCallback;
+				alertMenu.queuedAlerts[parameters] = pParameters;
+				return;
+			}
+
+			alertMenu.callback = pCallback;
+			alertMenu.parameters = pParameters;
+			for (let elem of VS.Client.getInterfaceElements('aInterfaceUtils_alert_interface')) {
+				elem.show();
+				if (elem.name === 'alert_menu') {
+					elem.text = '<div class="aInterfaceUtils_center_title">' + pTitle + '</div><div class="aInterfaceUtils_dialog">' + pMessage + '</div>';
+				}
+			}
+			this.inDialog = true;
+		}
+
+		aInterfaceUtils.closeAlertMenu = function() {
+			let alertMenu = VS.Client.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
+			let count;
+			
+			VS.Client.hideInterface('aInterfaceUtils_alert_interface');
+
+			if (alertMenu.itemsInQueue) {
+				alertMenu.queueTracker++;
+				count = alertMenu.queueTracker;
+				setTimeout(function() {
+					VS.World.global.aInterfaceUtils.alert(alertMenu.queuedAlerts['message' + count], alertMenu.queuedAlerts['title' + count], alertMenu.queuedAlerts['callback' + count], alertMenu.queuedAlerts['parameters' + count]);
+				}, 500);
+				alertMenu.itemsInQueue--;
+			} else {
+				alertMenu.itemsInQueue = 0;
+				alertMenu.queueTracker = 0;
+				alertMenu.queuedAlerts = {};
+			}
+			alertMenu.text = '';
+			this.inDialog = false;
+		}
+
+		aInterfaceUtils.input = function(pText, pDefaultText, pCallback, pParameters) {
+			let inputMenu = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
+			let inputText = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_input');
+			let num;
+			let text;
+			let defaultText;
+			let callback;
+			let parameters;
+			/* inputMenu.storedMacroAtlas = VS.Client._vy_macroAtlas; */
+
+			if (inputMenu.shown) {
+				inputMenu.itemsInQueue++
+				num = inputMenu.itemsInQueue;
+				text = 'text' + num;
+				defaultText = 'defaultText' + num;
+				callback = 'callback' + num;
+				parameters = 'parameters' + num;
+				inputMenu.queuedInputs[text] = pText;
+				inputMenu.queuedInputs[defaultText] = pDefaultText;
+				inputMenu.queuedInputs[callback] = pCallback;
+				inputMenu.queuedInputs[parameters] = pParameters;
+				return;
+			}
+				
+			inputMenu.closing = false;
+			inputMenu.defaultText = pDefaultText;
+			inputMenu.callback = pCallback;
+			inputMenu.parameters = pParameters;
+			// needs to be shown to create dom element
+			inputText.show();
+			if (inputText.getDOM().children[0]) {
+				inputText.getDOM().children[0].placeholder = pDefaultText;
+			}
+			
+			for (let elem of VS.Client.getInterfaceElements('aInterfaceUtils_input_interface')) {
+				elem.show();
+				if (elem.name === 'input_menu') {
+					elem.text = '<div class="aInterfaceUtils_input">' + pText + '</div>', 'input_interface';
+				}
+			}
+			this.inInput = true;
+		}
+
+		aInterfaceUtils.closeInputMenu = function() {
+			// if you have not inputted anything there is nothing to send to the callback so make this a priority
+			if (!VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu').text) {
+				// shake error animation here
+				return;
+			}
+			let inputMenu = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
+			let inputText = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_input');
+			let inputOk = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_ok_button');
+			let count;
+
+			inputMenu.inputValue = inputText.text;
+
+			VS.Client.hideInterface('aInterfaceUtils_input_interface');
+
+			inputMenu.closing = true;
+			
+			if (inputMenu.itemsInQueue) {
+				inputMenu.queueTracker++;
+				count = inputMenu.queueTracker;
+				setTimeout(function() {
+					VS.World.global.aInterfaceUtils.input(inputMenu.queuedInputs['text' + count], inputMenu.queuedInputs['defaultText' + count], inputMenu.queuedInputs['callback' + count], inputMenu.queuedInputs['parameters' + count]);
+				}, 500);
+				inputMenu.itemsInQueue--;
+			} else {
+				inputMenu.itemsInQueue = 0;
+				inputMenu.queueTracker = 0;
+				inputMenu.queuedInputs = {};
+			}
+			inputMenu.text = '';
+			inputText.text = '';
+			this.inInput = false;
+			/* VS.Client.setMacroAtlas(inputMenu.storedMacroAtlas); */
+		}
+
+		aInterfaceUtils.confirm = function(pMessage, pTitle, pCallback, pParameters) {
+			let confirmMenu = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
+			let num;
+			let message;
+			let title;
+			let callback;
+			let parameters;
+			
+			if (confirmMenu.shown) {
+				confirmMenu.itemsInQueue++;
+				num = confirmMenu.itemsInQueue;
+				message = 'message' + num;
+				title = 'title' + num;
+				callback = 'callback' + num;
+				parameters = 'parameters' + num;
+				confirmMenu.queuedDialogs[message] = pMessage;
+				confirmMenu.queuedDialogs[title] = pTitle;
+				confirmMenu.queuedDialogs[callback] = pCallback;
+				confirmMenu.queuedDialogs[parameters] = pParameters;
+				return;
+			}
+
+			confirmMenu.callback = pCallback;
+			confirmMenu.parameters = pParameters;
+			
+			for (let elem of VS.Client.getInterfaceElements('aInterfaceUtils_confirm_interface')) {
+				elem.show();
+				if (elem.name === 'confirm_menu') {
+					elem.text = '<div class="aInterfaceUtils_center_title">' + pTitle + '</div><div class="aInterfaceUtils_dialog">' + pMessage + '</div>';
+				}
+			}
+					
+			this.inDialog = true;
+		}
+
+		aInterfaceUtils.closeConfirmMenu = function() {
+			let confirmMenu = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
+			let acceptButton = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu_yes_button');
+			let closeButton = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu_no_button');
+			let count;		
+			
+			VS.Client.hideInterface('aInterfaceUtils_confirm_interface');
+
+			if (confirmMenu.itemsInQueue) {
+				confirmMenu.queueTracker++;
+				count = confirmMenu.queueTracker;
+				setTimeout(function() {
+					VS.World.global.aInterfaceUtils.confirm(confirmMenu.queuedDialogs['message' + count], confirmMenu.queuedDialogs['title' + count], confirmMenu.queuedDialogs['callback' + count], confirmMenu.queuedDialogs['parameters' + count]);
+				}, 500);
+				confirmMenu.itemsInQueue--;
+			} else {
+				confirmMenu.itemsInQueue = 0;
+				confirmMenu.queueTracker = 0;
+				confirmMenu.queuedDialogs = {};
+			}
+			confirmMenu.text = '';
+			this.inDialog = false;
+		}
+	}
+
+
+
+
+
+
 	let buildInterfaceUtils = function(aInterfaceUtils) {
 		VS.World.global.aInterfaceUtils = aInterfaceUtils;
+		VS.Type.setVariables('Client', { '___EVITCA_aInterfaceUtils': true });
 
 		// store the original onConnect function if there is one
 		aInterfaceUtils._onConnect = VS.Type.getFunction('Client', 'onConnect');
@@ -27,8 +609,8 @@
 			this._dragging = { 'element': null, 'xOff': 0, 'yOff': 0 };
 			this._mousedDowned = null;
 			this.dragging = false;
-			if (this.aInterfaceUtils._onConnect) {
-				this.aInterfaceUtils._onConnect.apply(this);
+			if (VS.World.global.aInterfaceUtils._onConnect) {
+				VS.World.global.aInterfaceUtils._onConnect.apply(this);
 			}
 		}
 
@@ -48,8 +630,8 @@
 			if (this.___EVITCA_aInventory) {
 				this.aInventory.outlineFilter.thickness = this.aInventory.outlineDefaultThickness * mainM.mapScaleWidth;
 			}
-			if (this.aInterfaceUtils._onWindowResize) {
-				this.aInterfaceUtils._onWindowResize.apply(this);
+			if (VS.World.global.aInterfaceUtils._onWindowResize) {
+				VS.World.global.aInterfaceUtils._onWindowResize.apply(this, arguments);
 			}
 		}
 
@@ -155,7 +737,7 @@
 				}
 			}
 			if (VS.World.global.aInterfaceUtils._onInterfaceLoaded) {
-				VS.World.global.aInterfaceUtils._onInterfaceLoaded.apply(this);
+				VS.World.global.aInterfaceUtils._onInterfaceLoaded.apply(this, arguments);
 			}
 		}
 
@@ -233,8 +815,8 @@
 				}
 			}
 
-			if (this.aInterfaceUtils._onMouseMove) {
-				this.aInterfaceUtils._onMouseMove.apply(this);
+			if (VS.World.global.aInterfaceUtils._onMouseMove) {
+				VS.World.global.aInterfaceUtils._onMouseMove.apply(this, arguments);
 			}
 		}
 
@@ -273,8 +855,8 @@
 					}
 				}
 			}
-			if (this.aInterfaceUtils._onMouseDown) {
-				this.aInterfaceUtils._onMouseDown.apply(this);
+			if (VS.World.global.aInterfaceUtils._onMouseDown) {
+				VS.World.global.aInterfaceUtils._onMouseDown.apply(this, arguments);
 			}
 		}
 
@@ -325,19 +907,18 @@
 				this.dragging = false;
 			}
 
-			if (this.aInterfaceUtils._onMouseUp) {
-				this.aInterfaceUtils._onMouseUp.apply(this);
+			if (VS.World.global.aInterfaceUtils._onMouseUp) {
+				VS.World.global.aInterfaceUtils._onMouseUp.apply(this, arguments);
 			}
 		}
 
 		// assign the custom onMouseUp function to the client
 		VS.Type.setFunction('Client', 'onMouseUp', onMouseUp);
+		VS.Type.setVariables('Interface', { 'scale': { 'x': 1, 'y': 1 }, 'anchor': { 'x': 0.5, 'y': 0.5 }, '_protruding': { 'east': false, 'west': false, 'north': false, 'south': false }, 'dragOptions': { 'draggable': false, 'beingDragged': false, 'parent': false, 'offsets': { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } } })
 
 		// store the original onNew function if there is one
 		aInterfaceUtils._onNew = VS.Type.getFunction('Interface', 'onNew');
-
-		VS.Type.setVariables('Interface', { 'scale': { 'x': 1, 'y': 1 }, 'anchor': { 'x': 0.5, 'y': 0.5 }, '_protruding': { 'east': false, 'west': false, 'north': false, 'south': false } })
-
+		
 		// the function that will be used as the `Interface.onNew` function
 		let onNew = function() {
 			this.defaultPos = { 'x': this.xPos, 'y': this.yPos };
@@ -345,21 +926,17 @@
 			this.defaultSize = { 'width': this.width, 'height': this.height };
 			this.defaultScreenPercentage = { 'x': ((100 * this.xPos) / VS.World.getGameSize().width), 'y': ((100 * this.yPos) / VS.World.getGameSize().height) };
 			this.interfaceName = this.getInterfaceName();
-			if (!this.dragOptions) {
-				this.dragOptions = { 'draggable': false, 'beingDragged': false, 'parent': false, 'offsets': { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } };
-			}
-
-			if (this.dragOptions.titlebar) {
-				if (!this.dragOptions.titlebar.xPos) {
-					this.dragOptions.titlebar.xPos = 0;
-				}
-
-				if (!this.dragOptions.titlebar.yPos) {
-					this.dragOptions.titlebar.yPos = 0;
-				}
-			}
 
 			if (this.dragOptions.draggable) {
+				if (this.dragOptions.titlebar) {
+					if (!this.dragOptions.titlebar.xPos) {
+						this.dragOptions.titlebar.xPos = 0;
+					}
+
+					if (!this.dragOptions.titlebar.yPos) {
+						this.dragOptions.titlebar.yPos = 0;
+					}
+				}
 				this.dragOptions.freeze = { 'x': { 'min': 0, 'max': 0, 'minWidth': 0, 'maxWidth': 0 }, 'y': { 'min': 0, 'max': 0, 'minHeight': 0, 'maxHeight': 0 }, 'updateX': false, 'updateX2': false, 'updateY': false, 'updateY2': false };
 				this.dragOptions.offsets = { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } };
 				for (let e of VS.Client.getInterfaceElements(this.interfaceName)) {
@@ -396,12 +973,40 @@
 			}
 
 			if (VS.World.global.aInterfaceUtils._onNew) {
-				VS.World.global.aInterfaceUtils._onNew.apply(this);
+				VS.World.global.aInterfaceUtils._onNew.apply(this, arguments);
 			}
 		}
 
-		// assign the custom onNew function to the Interface type
+		// assign the custom onShow function to the Interface type
 		VS.Type.setFunction('Interface', 'onNew', onNew);
+
+		// store the original onShow function if there is one
+		aInterfaceUtils._onShow = VS.Type.getFunction('Interface', 'onShow');
+		
+		// the function that will be used as the `Interface.onShow` function
+		let onShow = function(pClient) {
+			this.shown = true;
+			if (VS.World.global.aInterfaceUtils._onShow) {
+				VS.World.global.aInterfaceUtils._onShow.apply(this, arguments);
+			}
+		}
+
+		// assign the custom onShow function to the Interface type
+		VS.Type.setFunction('Interface', 'onShow', onShow);
+
+		// store the original onHide function if there is one
+		aInterfaceUtils._onHide = VS.Type.getFunction('Interface', 'onHide');
+		
+		// the function that will be used as the `Interface.onHide` function
+		let onHide = function(pClient) {
+			this.shown = false;
+			if (VS.World.global.aInterfaceUtils._onHide) {
+				VS.World.global.aInterfaceUtils._onHide.apply(this, arguments);
+			}
+		}
+		
+		// assign the custom onHide function to the Interface type
+		VS.Type.setFunction('Interface', 'onHide', onHide);
 
 		let reposition = function(pX, pY, pDefaultX, pDefaultY) {
 			let size = {
@@ -413,7 +1018,7 @@
 			let protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][this._protruding.east | (this._protruding.west << 1) | (this._protruding.north << 2) | (this._protruding.south << 3)];
 
 			if (protrudingDirection === 'none') {
-				this.setPos(Math.clamp(pX - xOff + this.defaultPos.x - pDefaultX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.owner.width + this.dragOptions.offsets.x.min), Math.clamp(pY - yOff + this.defaultPos.y - pDefaultY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.owner.height + this.dragOptions.offsets.y.min))
+				this.setPos(Math.clamp(pX - xOff + this.defaultPos.x - pDefaultX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.owner.width + this.dragOptions.offsets.x.min), Math.clamp(pY - yOff + this.defaultPos.y - pDefaultY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.owner.height + this.dragOptions.offsets.y.min));
 				return;
 			}
 
@@ -434,7 +1039,6 @@
 			}
 		}
 
-
 		// give this reposition function to the interface type
 		VS.Type.setFunction('Interface', 'reposition', reposition);
 
@@ -448,9 +1052,63 @@
 		// give this isMousedDown function to the diob type
 		VS.Type.setFunction('Diob', 'isMousedDown', isMousedDown);
 
+		let superFunction = function(pFunctionName, pArgs) {
+			if (this.parentType || this.baseType) {
+				VS.Type.callFunction((this.parentType ? this.parentType : this.baseType), pFunctionName, this, ...pArgs);
+			}
+		}
+
+		VS.Type.setFunction('Diob', 'super', superFunction);
 	}
 
 })();
 
 #END JAVASCRIPT
 #END CLIENTCODE
+
+#BEGIN WEBSTYLE
+
+.aInterfaceUtils_dialog {
+	text-shadow: rgb(34, 34, 34) 2px 0px 0px, rgb(34, 34, 34) 1.75517px 0.958851px 0px, rgb(34, 34, 34) 1.0806px 1.68294px 0px, rgb(34, 34, 34) 0.141474px 1.99499px 0px, rgb(34, 34, 34) -0.832294px 1.81859px 0px, rgb(34, 34, 34) -1.60229px 1.19694px 0px, rgb(34, 34, 34) -1.97998px 0.28224px 0px, rgb(34, 34, 34) -1.87291px -0.701566px 0px, rgb(34, 34, 34) -1.30729px -1.5136px 0px, rgb(34, 34, 34) -0.421592px -1.95506px 0px, rgb(34, 34, 34) 0.567324px -1.91785px 0px, rgb(34, 34, 34) 1.41734px -1.41108px 0px, rgb(34, 34, 34) 1.92034px -0.558831px 0px;
+	font-family: 'Arial', sans-serif;
+	color: #fff;
+	font-size: 12px;
+	padding-top: 35px;
+	text-align: center;
+}
+
+.aInterfaceUtils_dialog_button {
+	text-shadow: rgb(34, 34, 34) 2px 0px 0px, rgb(34, 34, 34) 1.75517px 0.958851px 0px, rgb(34, 34, 34) 1.0806px 1.68294px 0px, rgb(34, 34, 34) 0.141474px 1.99499px 0px, rgb(34, 34, 34) -0.832294px 1.81859px 0px, rgb(34, 34, 34) -1.60229px 1.19694px 0px, rgb(34, 34, 34) -1.97998px 0.28224px 0px, rgb(34, 34, 34) -1.87291px -0.701566px 0px, rgb(34, 34, 34) -1.30729px -1.5136px 0px, rgb(34, 34, 34) -0.421592px -1.95506px 0px, rgb(34, 34, 34) 0.567324px -1.91785px 0px, rgb(34, 34, 34) 1.41734px -1.41108px 0px, rgb(34, 34, 34) 1.92034px -0.558831px 0px;
+	font-family: 'Arial', sans-serif;
+	color: #fff;
+	font-size: 11px;
+	text-align: center;
+}
+
+.aInterfaceUtils_center_title {
+	text-shadow: rgb(34, 34, 34) 2px 0px 0px, rgb(34, 34, 34) 1.75517px 0.958851px 0px, rgb(34, 34, 34) 1.0806px 1.68294px 0px, rgb(34, 34, 34) 0.141474px 1.99499px 0px, rgb(34, 34, 34) -0.832294px 1.81859px 0px, rgb(34, 34, 34) -1.60229px 1.19694px 0px, rgb(34, 34, 34) -1.97998px 0.28224px 0px, rgb(34, 34, 34) -1.87291px -0.701566px 0px, rgb(34, 34, 34) -1.30729px -1.5136px 0px, rgb(34, 34, 34) -0.421592px -1.95506px 0px, rgb(34, 34, 34) 0.567324px -1.91785px 0px, rgb(34, 34, 34) 1.41734px -1.41108px 0px, rgb(34, 34, 34) 1.92034px -0.558831px 0px;
+	font-family: 'Arial', sans-serif;
+	color: #fff;
+	font-size: 14px;
+	text-align: center;
+}
+
+.aInterfaceUtils_input {
+	text-shadow: rgb(34, 34, 34) 2px 0px 0px, rgb(34, 34, 34) 1.75517px 0.958851px 0px, rgb(34, 34, 34) 1.0806px 1.68294px 0px, rgb(34, 34, 34) 0.141474px 1.99499px 0px, rgb(34, 34, 34) -0.832294px 1.81859px 0px, rgb(34, 34, 34) -1.60229px 1.19694px 0px, rgb(34, 34, 34) -1.97998px 0.28224px 0px, rgb(34, 34, 34) -1.87291px -0.701566px 0px, rgb(34, 34, 34) -1.30729px -1.5136px 0px, rgb(34, 34, 34) -0.421592px -1.95506px 0px, rgb(34, 34, 34) 0.567324px -1.91785px 0px, rgb(34, 34, 34) 1.41734px -1.41108px 0px, rgb(34, 34, 34) 1.92034px -0.558831px 0px;
+	font-family: 'Arial', sans-serif;
+	color: #fff;
+	font-size: 12px;
+	padding-top: 15px;
+	padding-left: 1px;
+}
+
+.aInterfaceUtils_bold {
+	font-weight: bold;
+}
+
+#ti_aInterfaceUtils_input_interface_input_menu_input::placeholder {
+  color: #ffffff;
+  opacity: 0.5;
+}
+
+#END WEBSTYLE
