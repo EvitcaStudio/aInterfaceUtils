@@ -505,17 +505,16 @@
 		}
 
 		aInterfaceUtils.closeInputMenu = function() {
-			// if you have not inputted anything there is nothing to send to the callback so make this a priority
-			if (!VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu').text) {
-				// shake error animation here
-				return;
-			}
 			let inputMenu = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
 			let inputText = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_input');
 			let inputOk = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_ok_button');
 			let count;
 
 			inputMenu.inputValue = inputText.text;
+			if (!inputMenu.inputValue) {
+				// shake error animation here
+				return;
+			}
 
 			VS.Client.hideInterface('aInterfaceUtils_input_interface');
 
@@ -1109,8 +1108,8 @@
 	font-family: 'Arial', sans-serif;
 	color: #fff;
 	font-size: 12px;
-	padding-top: 15px;
-	padding-left: 1px;
+	padding-top: 18px;
+	padding-left: 6px;
 }
 
 .aInterfaceUtils_bold {
