@@ -598,17 +598,30 @@
 		}
 	}
 
-
-
-
-
-
 	let buildInterfaceUtils = function(aInterfaceUtils) {
 		VS.World.global.aInterfaceUtils = aInterfaceUtils;
 		VS.Type.setVariables('Client', { '___EVITCA_aInterfaceUtils': true });
 
 		// store the original onConnect function if there is one
 		aInterfaceUtils._onConnect = VS.Type.getFunction('Client', 'onConnect');
+
+		let isMousedDown = function() {
+			if (VS.Client._mousedDowned === this) {
+				return true;
+			}
+			return false;
+		}
+
+		// give this isMousedDown function to the diob type
+		VS.Type.setFunction('Diob', 'isMousedDown', isMousedDown);
+
+		let superFunction = function(pFunctionName, pArgs) {
+			if (this.parentType || this.baseType) {
+				VS.Type.callFunction((this.parentType ? this.parentType : this.baseType), pFunctionName, this, ...pArgs);
+			}
+		}
+
+		VS.Type.setFunction('Diob', 'super', superFunction);
 
 		// the function that will be used as the `pClient.onConnect` function
 		let onConnect = function() {
@@ -1051,24 +1064,6 @@
 
 		// give this reposition function to the interface type
 		VS.Type.setFunction('Interface', 'reposition', reposition);
-
-		let isMousedDown = function() {
-			if (VS.Client._mousedDowned === this) {
-				return true;
-			}
-			return false;
-		}
-
-		// give this isMousedDown function to the diob type
-		VS.Type.setFunction('Diob', 'isMousedDown', isMousedDown);
-
-		let superFunction = function(pFunctionName, pArgs) {
-			if (this.parentType || this.baseType) {
-				VS.Type.callFunction((this.parentType ? this.parentType : this.baseType), pFunctionName, this, ...pArgs);
-			}
-		}
-
-		VS.Type.setFunction('Diob', 'super', superFunction);
 	}
 
 })();
