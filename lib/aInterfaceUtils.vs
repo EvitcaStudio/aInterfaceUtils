@@ -157,7 +157,7 @@
 		}
 
 		alertMenuOkButton.onMouseClick = function(pClient, pX, pY, pButton) {
-			if (pButton === 1)
+			if (pButton === 1 && this.isMousedDown())
 				var alertMenuElem = pClient.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
 				if (alertMenuElem.callback) {
 					if (alertMenuElem.parameters) {
@@ -256,7 +256,7 @@
 			let inputMenu = pClient.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
 			aInterfaceUtils.closeInputMenu();
 			if (inputMenu.closing) {
-				if (inputMenu.callback) {
+				if (inputMenu.callback && typeof(inputMenu.callback) === 'function') {
 					if (inputMenu.parameters) {
 						inputMenu.callback(inputMenu.inputValue, ...inputMenu.parameters);
 					} else {
@@ -276,7 +276,7 @@
 		}
 
 		inputMenuOkButton.onMouseClick = function(pClient, pX, pY, pButton) {
-			if (pButton === 1) {
+			if (pButton === 1 && this.isMousedDown()) {
 				this.close(pClient)
 			}
 		}
@@ -284,6 +284,10 @@
 		VS.Client.addInterfaceElement(inputMenuInput, 'aInterfaceUtils_input_interface', 'input_menu_input', 304, 258);
 		VS.Client.addInterfaceElement(inputMenuOkButton, 'aInterfaceUtils_input_interface', 'input_menu_ok_button', 438, 312);
 		VS.Client.onInterfaceLoaded('aInterfaceUtils_input_interface');
+
+		aInterfaceUtils.useNumbersOnly = function() {
+			this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');
+		}
 
 		// confirm menu
 		let confirmMenu = VS.newDiob('Interface');
@@ -350,9 +354,9 @@
 		}
 
 		confirmMenuYesButton.onMouseClick = function(pClient, pX, pY, pButton) {
-			if (pButton === 1) {
+			if (pButton === 1 && this.isMousedDown()) {
 				let confirmMenu = pClient.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
-				if (confirmMenu.callback) {
+				if (confirmMenu.callback && typeof(confirmMenu.callback) === 'function') {
 					if (confirmMenu.parameters) {
 						confirmMenu.callback(true, ...confirmMenu.parameters);
 					} else {
@@ -389,9 +393,9 @@
 		}
 
 		confirmMenuNoButton.onMouseClick = function(pClient, pX, pY, pButton) {
-			if (pButton === 1) {
+			if (pButton === 1 && this.isMousedDown()) {
 				let confirmMenu = pClient.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
-				if (confirmMenu.callback) {
+				if (confirmMenu.callback && typeof(confirmMenu.callback) === 'function') {
 					if (confirmMenu.parameters) {
 						confirmMenu.callback(false, ...confirmMenu.parameters);
 					} else {
@@ -461,12 +465,13 @@
 			this.inDialog = false;
 		}
 
-		aInterfaceUtils.input = function(pText, pDefaultText, pCallback, pParameters) {
+		aInterfaceUtils.input = function(pText, pDefaultText, pNumbersOnly=false, pCallback, pParameters) {
 			let inputMenu = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
 			let inputText = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_input');
 			let num;
 			let text;
 			let defaultText;
+			let numbersOnly;
 			let callback;
 			let parameters;
 			/* inputMenu.storedMacroAtlas = VS.Client._vy_macroAtlas; */
@@ -476,10 +481,12 @@
 				num = inputMenu.itemsInQueue;
 				text = 'text' + num;
 				defaultText = 'defaultText' + num;
+				numbersOnly = 'numbersOnly' + num;
 				callback = 'callback' + num;
 				parameters = 'parameters' + num;
 				inputMenu.queuedInputs[text] = pText;
 				inputMenu.queuedInputs[defaultText] = pDefaultText;
+				inputMenu.queuedInputs[numbersOnly] = pNumbersOnly;
 				inputMenu.queuedInputs[callback] = pCallback;
 				inputMenu.queuedInputs[parameters] = pParameters;
 				return;
@@ -487,12 +494,17 @@
 				
 			inputMenu.closing = false;
 			inputMenu.defaultText = pDefaultText;
+			inputMenu.numbersOnly = pNumbersOnly;
 			inputMenu.callback = pCallback;
 			inputMenu.parameters = pParameters;
 			// needs to be shown to create dom element
 			inputText.show();
 			if (inputText.getDOM().children[0]) {
 				inputText.getDOM().children[0].placeholder = pDefaultText;
+			}
+
+			if (pNumbersOnly) {
+				document.getElementById('ti_aInterfaceUtils_input_interface_input_menu_input').addEventListener('input', this.useNumbersOnly);
 			}
 			
 			for (let elem of VS.Client.getInterfaceElements('aInterfaceUtils_input_interface')) {
@@ -516,6 +528,10 @@
 				return;
 			}
 
+			if (inputMenu.numbersOnly) {
+				document.getElementById('ti_aInterfaceUtils_input_interface_input_menu_input').removeEventListener('input', this.useNumbersOnly);
+			}
+
 			VS.Client.hideInterface('aInterfaceUtils_input_interface');
 
 			inputMenu.closing = true;
@@ -524,7 +540,7 @@
 				inputMenu.queueTracker++;
 				count = inputMenu.queueTracker;
 				setTimeout(function() {
-					VS.World.global.aInterfaceUtils.input(inputMenu.queuedInputs['text' + count], inputMenu.queuedInputs['defaultText' + count], inputMenu.queuedInputs['callback' + count], inputMenu.queuedInputs['parameters' + count]);
+					VS.World.global.aInterfaceUtils.input(inputMenu.queuedInputs['text' + count], inputMenu.queuedInputs['defaultText' + count], inputMenu.queuedInputs['numbersOnly' + count], inputMenu.queuedInputs['callback' + count], inputMenu.queuedInputs['parameters' + count]);
 				}, 500);
 				inputMenu.itemsInQueue--;
 			} else {
