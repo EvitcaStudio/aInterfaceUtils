@@ -2,10 +2,10 @@
 #BEGIN CLIENTCODE
 #BEGIN JAVASCRIPT
 
-(function() {
-	let aInterfaceUtils = {};
+(() => {
+	const aInterfaceUtils = {};
 	let libraryBuilt = false;
-	let engineWaitId = setInterval(function() {
+	const engineWaitId = setInterval(() => {
 		if (VS.World.global && !libraryBuilt) {
 			buildInterfaceUtils(aInterfaceUtils);
 			libraryBuilt = true;
@@ -17,7 +17,7 @@
 		}
 	});
 
-	let buildDialog = function(aInterfaceUtils) {
+	const buildDialog = (aInterfaceUtils) => {
 		const MAX_PLANE = 1999998;
 		VS.Client.aInterfaceUtils = aInterfaceUtils;
 		// attach onMouseClick event to client
@@ -98,7 +98,7 @@
 		VS.Client.createInterface('aInterfaceUtils_confirm_interface');
 
 		// alert menu
-		let alertMenu = VS.newDiob('Interface');
+		const alertMenu = VS.newDiob('Interface');
 		alertMenu.atlasName = 'aInterfaceUtils_atlas';
 		alertMenu.iconName = 'dialog_menu';
 		alertMenu.width = 380;
@@ -121,7 +121,7 @@
 			pClient.toggleMacroCapture(true);
 		}
 		alertMenu.onShow = function(pClient) {
-			for (let elem of pClient.getInterfaceElements('aInterfaceUtils_alert_interface')) {
+			for (const elem of pClient.getInterfaceElements('aInterfaceUtils_alert_interface')) {
 				elem.setPos(elem.defaultPos.x, elem.defaultPos.y);
 			}
 			pClient.setFocus(this)
@@ -133,7 +133,7 @@
 		}
 
 		// alert ok button
-		let alertMenuOkButton = VS.newDiob('Interface');
+		const alertMenuOkButton = VS.newDiob('Interface');
 		alertMenuOkButton.atlasName = 'aInterfaceUtils_atlas';
 		alertMenuOkButton.iconName = 'dialog_button';
 		alertMenuOkButton.interfaceType = 'WebBox';
@@ -157,8 +157,8 @@
 		}
 
 		alertMenuOkButton.onMouseClick = function(pClient, pX, pY, pButton) {
-			if (pButton === 1 && this.isMousedDown())
-				var alertMenuElem = pClient.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
+			if (pButton === 1 && this.isMousedDown()) {
+				const alertMenuElem = pClient.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
 				if (alertMenuElem.callback) {
 					if (alertMenuElem.parameters) {
 						alertMenuElem.callback(...alertMenuElem.parameters);
@@ -167,6 +167,7 @@
 					}
 				}
 				aInterfaceUtils.closeAlertMenu();
+			}
 		}
 
 		VS.Client.addInterfaceElement(alertMenu, 'aInterfaceUtils_alert_interface', 'alert_menu', 287, 178);
@@ -174,7 +175,7 @@
 		VS.Client.onInterfaceLoaded('aInterfaceUtils_alert_interface');
 
 		// input menu
-		let inputMenu = VS.newDiob('Interface');
+		const inputMenu = VS.newDiob('Interface');
 		inputMenu.atlasName = 'aInterfaceUtils_atlas';
 		inputMenu.iconName = 'dialog_menu';
 		inputMenu.width = 380;
@@ -212,7 +213,7 @@
 		}
 
 		inputMenu.onShow = function(pClient) {
-			for (let elem of pClient.getInterfaceElements('aInterfaceUtils_input_interface')) {
+			for (const elem of pClient.getInterfaceElements('aInterfaceUtils_input_interface')) {
 				elem.setPos(elem.defaultPos.x, elem.defaultPos.y);
 			}
 			pClient.setFocus(this);
@@ -225,7 +226,7 @@
 		}
 
 		// input
-		let inputMenuInput = VS.newDiob('Interface');
+		const inputMenuInput = VS.newDiob('Interface');
 		inputMenuInput.atlasName = 'aInterfaceUtils_atlas';
 		inputMenuInput.iconName = 'dialog_input';
 		inputMenuInput.width = 352;
@@ -236,12 +237,12 @@
 		inputMenuInput.parentElement = 'input_menu';
 		inputMenuInput.textStyle = { 'hPadding': 4, 'fill': '#fff' };
 		inputMenuInput.onExecute = function(pClient) {
-			let inputMenuOkButton = pClient.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_ok_button')
+			const inputMenuOkButton = pClient.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_ok_button')
 			inputMenuOkButton.close(pClient)
 		}
 
 		// input ok button
-		let inputMenuOkButton = VS.newDiob('Interface');
+		const inputMenuOkButton = VS.newDiob('Interface');
 		inputMenuOkButton.atlasName = 'aInterfaceUtils_atlas';
 		inputMenuOkButton.iconName = 'dialog_button';
 		inputMenuOkButton.width = 85;
@@ -253,7 +254,7 @@
 		inputMenuOkButton.textStyle = { 'vPadding': 7 };
 		inputMenuOkButton.text = '<div class="aInterfaceUtils_dialog_button">Ok</div>';
 		inputMenuOkButton.close = function(pClient) {
-			let inputMenu = pClient.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
+			const inputMenu = pClient.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
 			aInterfaceUtils.closeInputMenu();
 			if (inputMenu.closing) {
 				if (inputMenu.callback && typeof(inputMenu.callback) === 'function') {
@@ -290,7 +291,7 @@
 		}
 
 		// confirm menu
-		let confirmMenu = VS.newDiob('Interface');
+		const confirmMenu = VS.newDiob('Interface');
 		confirmMenu.atlasName = 'aInterfaceUtils_atlas';
 		confirmMenu.iconName = 'dialog_menu';
 		confirmMenu.width = 380;
@@ -317,7 +318,7 @@
 			pClient.toggleMacroCapture(true);
 		}
 		confirmMenu.onShow = function(pClient) {
-			for (let elem of pClient.getInterfaceElements('aInterfaceUtils_confirm_interface')) {
+			for (const elem of pClient.getInterfaceElements('aInterfaceUtils_confirm_interface')) {
 				elem.setPos(elem.defaultPos.x, elem.defaultPos.y);
 			}
 			pClient.setFocus(this);
@@ -328,7 +329,7 @@
 			this.super('onHide', arguments);
 		}
 		// confirm yes button
-		let confirmMenuYesButton = VS.newDiob('Interface');
+		const confirmMenuYesButton = VS.newDiob('Interface');
 		confirmMenuYesButton.atlasName = 'aInterfaceUtils_atlas';
 		confirmMenuYesButton.iconName = 'dialog_button';
 		confirmMenuYesButton.width = 85;
@@ -355,7 +356,7 @@
 
 		confirmMenuYesButton.onMouseClick = function(pClient, pX, pY, pButton) {
 			if (pButton === 1 && this.isMousedDown()) {
-				let confirmMenu = pClient.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
+				const confirmMenu = pClient.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
 				if (confirmMenu.callback && typeof(confirmMenu.callback) === 'function') {
 					if (confirmMenu.parameters) {
 						confirmMenu.callback(true, ...confirmMenu.parameters);
@@ -367,7 +368,7 @@
 			}
 		}
 		// confirm no button
-		let confirmMenuNoButton = VS.newDiob('Interface');
+		const confirmMenuNoButton = VS.newDiob('Interface');
 		confirmMenuNoButton.atlasName = 'aInterfaceUtils_atlas';
 		confirmMenuNoButton.iconName = 'dialog_button';
 		confirmMenuNoButton.width = 85;
@@ -394,7 +395,7 @@
 
 		confirmMenuNoButton.onMouseClick = function(pClient, pX, pY, pButton) {
 			if (pButton === 1 && this.isMousedDown()) {
-				let confirmMenu = pClient.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
+				const confirmMenu = pClient.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
 				if (confirmMenu.callback && typeof(confirmMenu.callback) === 'function') {
 					if (confirmMenu.parameters) {
 						confirmMenu.callback(false, ...confirmMenu.parameters);
@@ -411,7 +412,7 @@
 		VS.Client.onInterfaceLoaded('aInterfaceUtils_confirm_interface');
 
 		aInterfaceUtils.alert = function(pTitle, pMessage, pCallback, pParameters) {
-			let alertMenu = VS.Client.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
+			const alertMenu = VS.Client.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
 			let num;
 			let message;
 			let title;
@@ -434,7 +435,7 @@
 
 			alertMenu.callback = pCallback;
 			alertMenu.parameters = pParameters;
-			for (let elem of VS.Client.getInterfaceElements('aInterfaceUtils_alert_interface')) {
+			for (const elem of VS.Client.getInterfaceElements('aInterfaceUtils_alert_interface')) {
 				elem.show();
 				if (elem.name === 'alert_menu') {
 					elem.text = '<div class="aInterfaceUtils_center_title">' + pTitle + '</div><div class="aInterfaceUtils_dialog">' + pMessage + '</div>';
@@ -444,7 +445,7 @@
 		}
 
 		aInterfaceUtils.closeAlertMenu = function() {
-			let alertMenu = VS.Client.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
+			const alertMenu = VS.Client.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
 			let count;
 			
 			VS.Client.hideInterface('aInterfaceUtils_alert_interface');
@@ -466,8 +467,8 @@
 		}
 
 		aInterfaceUtils.input = function(pText, pDefaultText, pNumbersOnly=false, pCallback, pParameters) {
-			let inputMenu = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
-			let inputText = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_input');
+			const inputMenu = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
+			const inputText = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_input');
 			let num;
 			let text;
 			let defaultText;
@@ -507,7 +508,7 @@
 				document.getElementById('ti_aInterfaceUtils_input_interface_input_menu_input').addEventListener('input', this.useNumbersOnly);
 			}
 			
-			for (let elem of VS.Client.getInterfaceElements('aInterfaceUtils_input_interface')) {
+			for (const elem of VS.Client.getInterfaceElements('aInterfaceUtils_input_interface')) {
 				elem.show();
 				if (elem.name === 'input_menu') {
 					elem.text = '<div class="aInterfaceUtils_input">' + pText + '</div>', 'input_interface';
@@ -517,9 +518,9 @@
 		}
 
 		aInterfaceUtils.closeInputMenu = function() {
-			let inputMenu = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
-			let inputText = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_input');
-			let inputOk = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_ok_button');
+			const inputMenu = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
+			const inputText = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_input');
+			const inputOk = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_ok_button');
 			let count;
 
 			inputMenu.inputValue = inputText.text;
@@ -555,7 +556,7 @@
 		}
 
 		aInterfaceUtils.confirm = function(pTitle, pMessage, pCallback, pParameters) {
-			let confirmMenu = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
+			const confirmMenu = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
 			let num;
 			let message;
 			let title;
@@ -579,7 +580,7 @@
 			confirmMenu.callback = pCallback;
 			confirmMenu.parameters = pParameters;
 			
-			for (let elem of VS.Client.getInterfaceElements('aInterfaceUtils_confirm_interface')) {
+			for (const elem of VS.Client.getInterfaceElements('aInterfaceUtils_confirm_interface')) {
 				elem.show();
 				if (elem.name === 'confirm_menu') {
 					elem.text = '<div class="aInterfaceUtils_center_title">' + pTitle + '</div><div class="aInterfaceUtils_dialog">' + pMessage + '</div>';
@@ -590,9 +591,9 @@
 		}
 
 		aInterfaceUtils.closeConfirmMenu = function() {
-			let confirmMenu = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
-			let acceptButton = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu_yes_button');
-			let closeButton = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu_no_button');
+			const confirmMenu = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
+			const acceptButton = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu_yes_button');
+			const closeButton = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu_no_button');
 			let count;		
 			
 			VS.Client.hideInterface('aInterfaceUtils_confirm_interface');
@@ -614,14 +615,14 @@
 		}
 	}
 
-	let buildInterfaceUtils = function(aInterfaceUtils) {
+	const buildInterfaceUtils = (aInterfaceUtils) => {
 		VS.World.global.aInterfaceUtils = aInterfaceUtils;
 		VS.Type.setVariables('Client', { '___EVITCA_aInterfaceUtils': true });
 
 		// store the original onConnect function if there is one
 		aInterfaceUtils._onConnect = VS.Type.getFunction('Client', 'onConnect');
 
-		let isMousedDown = function() {
+		const isMousedDown = function() {
 			if (VS.Client._mousedDowned === this) {
 				return true;
 			}
@@ -631,7 +632,7 @@
 		// give this isMousedDown function to the diob type
 		VS.Type.setFunction('Diob', 'isMousedDown', isMousedDown);
 
-		let superFunction = function(pFunctionName, pArgs) {
+		const superFunction = function(pFunctionName, pArgs) {
 			if (this.parentType || this.baseType) {
 				VS.Type.callFunction((this.parentType ? this.parentType : this.baseType), pFunctionName, this, ...pArgs);
 			}
@@ -640,7 +641,7 @@
 		VS.Type.setFunction('Diob', 'super', superFunction);
 
 		// the function that will be used as the `pClient.onConnect` function
-		let onConnect = function() {
+		const onConnect = function() {
 			this._screenScale = { 'x': 1, 'y': 1 };
 			this._windowSize = this.getWindowSize();
 			this._gameSize = VS.World.getGameSize();
@@ -660,7 +661,7 @@
 		aInterfaceUtils._onWindowResize = VS.Type.getFunction('Client', 'onWindowResize');
 
 		// the function that will be used as the `pClient.onWindowResize` function
-		let onWindowResize = function(pWidth, pHeight) {
+		const onWindowResize = function(pWidth, pHeight) {
 			if (this._windowSize) {
 				this._windowSize.width = pWidth;
 				this._windowSize.height = pHeight;
@@ -681,16 +682,16 @@
 		aInterfaceUtils._onInterfaceLoaded = VS.Type.getFunction('Client', 'onInterfaceLoaded');
 
 		// the function that will be used as the `pClient.onInterfaceLoaded` function
-		let onInterfaceLoaded = function(pInterface) {
+		const onInterfaceLoaded = function(pInterface) {
 			let protruding;
 			let protrudingDirection;
-			for (let x of this.getInterfaceElements(pInterface)) {
+			for (const x of this.getInterfaceElements(pInterface)) {
 				if (x.dragOptions.draggable && x.dragOptions.parent) {
 					protruding = x._protruding;
 				}
 			}
 
-			for (let e of this.getInterfaceElements(pInterface)) {
+			for (const e of this.getInterfaceElements(pInterface)) {
 				if (protruding) {
 					e._protruding = protruding;
 					protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][e._protruding.east | (e._protruding.west << 1) | (e._protruding.north << 2) | (e._protruding.south << 3)];
@@ -729,9 +730,9 @@
 				}
 
 				if (e.parentElement) {
-					let parent = this.getInterfaceElement(pInterface, e.parentElement);
-					let noneX = Math.sign(e.xPos - parent.xPos) === -1 ? 0 : e.xPos - parent.xPos;
-					let noneY = Math.sign(e.yPos - parent.yPos) === -1 ? 0 : e.yPos - parent.yPos;
+					const parent = this.getInterfaceElement(pInterface, e.parentElement);
+					const noneX = Math.sign(e.xPos - parent.xPos) === -1 ? 0 : e.xPos - parent.xPos;
+					const noneY = Math.sign(e.yPos - parent.yPos) === -1 ? 0 : e.yPos - parent.yPos;
 					e.dragOptions.owner = parent;
 
 					if (protrudingDirection === 'none') {
@@ -787,22 +788,24 @@
 		aInterfaceUtils._onMouseMove = VS.Type.getFunction('Client', 'onMouseMove');
 
 		// the function that will be used as the `pClient.onMouseMove` function
-		let onMouseMove = function(pDiob, pX, pY) {
+		const onMouseMove = function(pDiob, pX, pY) {
 			if (this._dragging.element) {
 				const MAX_PLANE = 999999;
-				var realX = (this._dragging.element.preventAutoScale ? pX * this._screenScale.x : pX) - this._dragging.xOff;
-				var realY = (this._dragging.element.preventAutoScale ? pY * this._screenScale.y : pY) - this._dragging.yOff;
+				let realX = (this._dragging.element.preventAutoScale ? pX * this._screenScale.x : pX) - this._dragging.xOff;
+				let realY = (this._dragging.element.preventAutoScale ? pY * this._screenScale.y : pY) - this._dragging.yOff;
+				let maxWidth;
+				let maxHeight;
 
 				if (this._dragging.element.dragOptions?.titlebar?.xPos >= 0 && this._dragging.element.dragOptions?.titlebar?.yPos >= 0 && this._dragging.element.dragOptions?.titlebar?.width > 0 && this._dragging.element.dragOptions?.titlebar?.height > 0) {
-					var titleBarX = this._dragging.element.xPos + this._dragging.element.dragOptions.titlebar.xPos;
-					var titleBarWidthX = titleBarX + this._dragging.element.dragOptions.titlebar.width;
-					var titleBarY = this._dragging.element.yPos + this._dragging.element.dragOptions.titlebar.yPos;
-					var titleBarHeightY = titleBarY + this._dragging.element.dragOptions.titlebar.height;
-					var maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
-					var maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
+					const titleBarX = this._dragging.element.xPos + this._dragging.element.dragOptions.titlebar.xPos;
+					const titleBarWidthX = titleBarX + this._dragging.element.dragOptions.titlebar.width;
+					const titleBarY = this._dragging.element.yPos + this._dragging.element.dragOptions.titlebar.yPos;
+					const titleBarHeightY = titleBarY + this._dragging.element.dragOptions.titlebar.height;
+					maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
+					maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
 				} else {
-					var maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
-					var maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
+					maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
+					maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
 				}
 
 				this._dragging.element.setPos(Math.clamp(realX, this._dragging.element.dragOptions.offsets.x.min, maxWidth - this._dragging.element.dragOptions.offsets.x.max), Math.clamp(realY, this._dragging.element.dragOptions.offsets.y.min, maxHeight - this._dragging.element.dragOptions.offsets.y.max));
@@ -815,7 +818,7 @@
 					realX += this._dragging.xOff;
 					realY += this._dragging.yOff;
 
-					for (let e of this.getInterfaceElements(this._dragging.element.interfaceName)) {
+					for (const e of this.getInterfaceElements(this._dragging.element.interfaceName)) {
 						if (e !== this._dragging.element) {
 							if (e.parentElement === this._dragging.element.name) {
 								e.reposition(realX, realY, this._dragging.element.defaultPos.x, this._dragging.element.defaultPos.y);
@@ -840,7 +843,7 @@
 				this._dragging.element.plane += MAX_PLANE;
 				this._dragging.element.layer += MAX_PLANE;
 
-				for (let childElem of this.getInterfaceElements(this._dragging.element.interfaceName)) {
+				for (const childElem of this.getInterfaceElements(this._dragging.element.interfaceName)) {
 					if (childElem !== this._dragging.element) {
 						if (childElem.parentElement === this._dragging.element.name) {
 							// automatically dynamically relayer the children element when dragging it so its above everything else
@@ -866,18 +869,18 @@
 		aInterfaceUtils._onMouseDown = VS.Type.getFunction('Client', 'onMouseDown');
 
 		// the function that will be used as the `pClient.onMouseDown` function
-		let onMouseDown = function(pDiob, pX, pY, pButton) {
+		const onMouseDown = function(pDiob, pX, pY, pButton) {
 			if (pButton === 1) {
 				this._mousedDowned = pDiob;
 				if (pDiob.baseType === 'Interface') {
 					if (pDiob.dragOptions.draggable) {
-						var realX = (pDiob.preventAutoScale ? pX * this._screenScale.x : pX);
-						var realY = (pDiob.preventAutoScale ? pY * this._screenScale.y : pY);
+						const realX = (pDiob.preventAutoScale ? pX * this._screenScale.x : pX);
+						const realY = (pDiob.preventAutoScale ? pY * this._screenScale.y : pY);
 						if (pDiob.dragOptions?.titlebar?.xPos >= 0 && pDiob.dragOptions?.titlebar?.yPos >= 0 && pDiob.dragOptions?.titlebar?.width > 0 && pDiob.dragOptions?.titlebar?.height > 0) {
-							var titleBarX = pDiob.xPos + pDiob.dragOptions.titlebar.xPos;
-							var titleBarWidthX = titleBarX + pDiob.dragOptions.titlebar.width;
-							var titleBarY = pDiob.yPos + pDiob.dragOptions.titlebar.yPos;
-							var titleBarHeightY = titleBarY + pDiob.dragOptions.titlebar.height;
+							const titleBarX = pDiob.xPos + pDiob.dragOptions.titlebar.xPos;
+							const titleBarWidthX = titleBarX + pDiob.dragOptions.titlebar.width;
+							const titleBarY = pDiob.yPos + pDiob.dragOptions.titlebar.yPos;
+							const titleBarHeightY = titleBarY + pDiob.dragOptions.titlebar.height;
 							if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY) {
 								this._dragging.element = pDiob;
 								this._dragging.xOff = realX - titleBarX + pDiob.dragOptions.titlebar.xPos;
@@ -906,13 +909,13 @@
 		aInterfaceUtils._onMouseUp = VS.Type.getFunction('Client', 'onMouseUp');
 
 		// the function that will be used as the `pClient.onMouseUp` function
-		let onMouseUp = function(pDiob, pX, pY, pButton) {
+		const onMouseUp = function(pDiob, pX, pY, pButton) {
 			if (pButton === 1) {
 				if (this._dragging.element) {
 					const MAX_PLANE = 999999;
 					if (this._dragging.element.dragOptions.beingDragged) {
-						var realX = (this._dragging.element.preventAutoScale ? pX * this._screenScale.x : pX);
-						var realY = (this._dragging.element.preventAutoScale ? pY * this._screenScale.y : pY);
+						const realX = (this._dragging.element.preventAutoScale ? pX * this._screenScale.x : pX);
+						const realY = (this._dragging.element.preventAutoScale ? pY * this._screenScale.y : pY);
 						
 						if (this._dragging.element.onDragEnd) {
 							this._dragging.element.onDragEnd(this._dragging.element.xPos, this._dragging.element.yPos);
@@ -922,7 +925,7 @@
 						this._dragging.element.plane -= MAX_PLANE;
 						this._dragging.element.layer -= MAX_PLANE;
 
-						for (let childElem of this.getInterfaceElements(this._dragging.element.interfaceName)) {
+						for (const childElem of this.getInterfaceElements(this._dragging.element.interfaceName)) {
 							if (childElem !== this._dragging.element) {
 								if (childElem.parentElement === this._dragging.element.name) {
 									// automatically dynamically relayer the children elements as well when you stop dragging it so they get their original layering
@@ -959,7 +962,9 @@
 		aInterfaceUtils._onNew = VS.Type.getFunction('Interface', 'onNew');
 		
 		// the function that will be used as the `Interface.onNew` function
-		let onNew = function() {
+		const onNew = function() {
+			// if this is just a interface made with `new Diob('Interface')` then do not include it
+			if (this.name === 'Interface') return;
 			this.defaultPos = { 'x': this.xPos, 'y': this.yPos };
 			this.defaultDisplay = { 'layer': this.layer, 'plane': this.plane };
 			this.defaultSize = { 'width': this.width, 'height': this.height };
@@ -978,12 +983,12 @@
 				}
 				this.dragOptions.freeze = { 'x': { 'min': 0, 'max': 0, 'minWidth': 0, 'maxWidth': 0 }, 'y': { 'min': 0, 'max': 0, 'minHeight': 0, 'maxHeight': 0 }, 'updateX': false, 'updateX2': false, 'updateY': false, 'updateY2': false };
 				this.dragOptions.offsets = { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } };
-				for (let e of VS.Client.getInterfaceElements(this.interfaceName)) {
+				for (const e of VS.Client.getInterfaceElements(this.interfaceName)) {
 					if (e.parentElement === this.name) {
-						var greaterX = (e.xPos > this.xPos + this.width) && (this.dragOptions.freeze.x.max ? e.xPos > this.dragOptions.freeze.x.max : true);
-						var lesserX = (e.xPos < this.xPos) && (this.dragOptions.freeze.x.min ? e.xPos < this.dragOptions.freeze.x.min : true);
-						var greaterY = (e.yPos > this.yPos + this.height) && (this.dragOptions.freeze.y.max ? e.yPos > this.dragOptions.freeze.y.max : true);
-						var lesserY = (e.yPos < this.yPos) && (this.dragOptions.freeze.y.min ? e.yPos < this.dragOptions.freeze.y.min : true);
+						const greaterX = (e.xPos > this.xPos + this.width) && (this.dragOptions.freeze.x.max ? e.xPos > this.dragOptions.freeze.x.max : true);
+						const lesserX = (e.xPos < this.xPos) && (this.dragOptions.freeze.x.min ? e.xPos < this.dragOptions.freeze.x.min : true);
+						const greaterY = (e.yPos > this.yPos + this.height) && (this.dragOptions.freeze.y.max ? e.yPos > this.dragOptions.freeze.y.max : true);
+						const lesserY = (e.yPos < this.yPos) && (this.dragOptions.freeze.y.min ? e.yPos < this.dragOptions.freeze.y.min : true);
 
 						if (greaterX) {
 							this.dragOptions.freeze.updateX2 = true;
@@ -1023,7 +1028,7 @@
 		aInterfaceUtils._onShow = VS.Type.getFunction('Interface', 'onShow');
 		
 		// the function that will be used as the `Interface.onShow` function
-		let onShow = function(pClient) {
+		const onShow = function(pClient) {
 			this.shown = true;
 			if (VS.World.global.aInterfaceUtils._onShow) {
 				VS.World.global.aInterfaceUtils._onShow.apply(this, arguments);
@@ -1037,7 +1042,7 @@
 		aInterfaceUtils._onHide = VS.Type.getFunction('Interface', 'onHide');
 		
 		// the function that will be used as the `Interface.onHide` function
-		let onHide = function(pClient) {
+		const onHide = function(pClient) {
 			this.shown = false;
 			if (VS.World.global.aInterfaceUtils._onHide) {
 				VS.World.global.aInterfaceUtils._onHide.apply(this, arguments);
@@ -1047,14 +1052,14 @@
 		// assign the custom onHide function to the Interface type
 		VS.Type.setFunction('Interface', 'onHide', onHide);
 
-		let reposition = function(pX, pY, pDefaultX, pDefaultY) {
-			let size = {
+		const reposition = function(pX, pY, pDefaultX, pDefaultY) {
+			const size = {
 				'width': (this.preventAutoScale ? VS.Client._windowSize.width : VS.Client._gameSize.width),
 				'height': (this.preventAutoScale ? VS.Client._windowSize.height : VS.Client._gameSize.height)
 			}
-			let xOff = VS.Client._dragging.xOff;
-			let yOff = VS.Client._dragging.yOff;
-			let protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][this._protruding.east | (this._protruding.west << 1) | (this._protruding.north << 2) | (this._protruding.south << 3)];
+			const xOff = VS.Client._dragging.xOff;
+			const yOff = VS.Client._dragging.yOff;
+			const protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][this._protruding.east | (this._protruding.west << 1) | (this._protruding.north << 2) | (this._protruding.south << 3)];
 
 			if (protrudingDirection === 'none') {
 				this.setPos(Math.clamp(pX - xOff + this.defaultPos.x - pDefaultX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.owner.width + this.dragOptions.offsets.x.min), Math.clamp(pY - yOff + this.defaultPos.y - pDefaultY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.owner.height + this.dragOptions.offsets.y.min));
