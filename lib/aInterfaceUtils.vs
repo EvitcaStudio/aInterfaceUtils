@@ -963,13 +963,13 @@
 		
 		// the function that will be used as the `Interface.onNew` function
 		const onNew = function() {
-			// if this is just a interface made with `new Diob('Interface')` then do not include it
-			if (this.name === 'Interface') return;
+			const interfaceName = this.getInterfaceName();
+			if (!interfaceName) return;
 			this.defaultPos = { 'x': this.xPos, 'y': this.yPos };
 			this.defaultDisplay = { 'layer': this.layer, 'plane': this.plane };
 			this.defaultSize = { 'width': this.width, 'height': this.height };
 			this.defaultScreenPercentage = { 'x': ((100 * this.xPos) / VS.World.getGameSize().width), 'y': ((100 * this.yPos) / VS.World.getGameSize().height) };
-			this.interfaceName = this.getInterfaceName();
+			this.interfaceName = interfaceName;
 
 			if (this.dragOptions.draggable) {
 				if (this.dragOptions.titlebar) {
