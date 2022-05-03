@@ -7,6 +7,7 @@
 	let libraryBuilt = false;
 	const engineWaitId = setInterval(() => {
 		if (VS.World.global && !libraryBuilt) {
+			// Since the client is not available inside of this function, we assign data to the type `Client` and when it is created, it uses that data.
 			buildInterfaceUtils(aInterfaceUtils);
 			libraryBuilt = true;
 		}
@@ -691,88 +692,88 @@
 				}
 			}
 
-			for (const e of this.getInterfaceElements(pInterface)) {
+			for (const element of this.getInterfaceElements(pInterface)) {
 				if (protruding) {
-					e._protruding = protruding;
-					protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][e._protruding.east | (e._protruding.west << 1) | (e._protruding.north << 2) | (e._protruding.south << 3)];
+					element._protruding = protruding;
+					protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][element._protruding.east | (element._protruding.west << 1) | (element._protruding.north << 2) | (element._protruding.south << 3)];
 				}
 
-				if (e.dragOptions.draggable && e.dragOptions.parent) {
+				if (element.dragOptions.draggable && element.dragOptions.parent) {
 					if (protrudingDirection === 'none') {
-						e.dragOptions.offsets = { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } };
+						element.dragOptions.clampedPos = { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } };
 						continue;
 					}
 
 					if (protrudingDirection === 'e' || protrudingDirection === 'en' || protrudingDirection === 'es' || protrudingDirection === 'ens') {
-						e.dragOptions.offsets.x = { 'max': e.dragOptions.freeze.x.max - e.xPos - e.width + e.dragOptions.freeze.x.maxWidth, 'min': 0 };
+						element.dragOptions.clampedPos.x = { 'maxPos': element.dragOptions.protrudingChildren.x.maxPos - element.xPos - element.width + element.dragOptions.protrudingChildren.x.maxWidth, 'minPos': 0 };
 					}
 
 					if (protrudingDirection === 'w' || protrudingDirection === 'wn' || protrudingDirection === 'ws' || protrudingDirection === 'wns') {
-						e.dragOptions.offsets.x = { 'max': 0, 'min': e.xPos - e.dragOptions.freeze.x.min };
+						element.dragOptions.clampedPos.x = { 'maxPos': 0, 'minPos': element.xPos - element.dragOptions.protrudingChildren.x.minPos };
 					}
 
 					if (protrudingDirection === 'ew' || protrudingDirection === 'ewn' || protrudingDirection === 'ews' || protrudingDirection === 'ewns') {
-						e.dragOptions.offsets.x = { 'max': e.dragOptions.freeze.x.max - e.xPos - e.width + e.dragOptions.freeze.x.maxWidth, 'min': e.xPos - e.dragOptions.freeze.x.min };
+						element.dragOptions.clampedPos.x = { 'maxPos': element.dragOptions.protrudingChildren.x.maxPos - element.xPos - element.width + element.dragOptions.protrudingChildren.x.maxWidth, 'minPos': element.xPos - element.dragOptions.protrudingChildren.x.minPos };
 					}
 
 					if (protrudingDirection === 'n' || protrudingDirection === 'en' || protrudingDirection === 'wn' || protrudingDirection === 'ewn') {
-						e.dragOptions.offsets.y = { 'max': 0, 'min': e.yPos - e.dragOptions.freeze.y.min };
+						element.dragOptions.clampedPos.y = { 'maxPos': 0, 'minPos': element.yPos - element.dragOptions.protrudingChildren.y.minPos };
 					}
 
 					if (protrudingDirection === 's' || protrudingDirection === 'es' || protrudingDirection === 'ws' || protrudingDirection === 'ews') {
-						e.dragOptions.offsets.y = { 'max': e.dragOptions.freeze.y.max - e.yPos - e.height + e.dragOptions.freeze.y.maxHeight, 'min': 0 };
+						element.dragOptions.clampedPos.y = { 'maxPos': element.dragOptions.protrudingChildren.y.maxPos - element.yPos - element.height + element.dragOptions.protrudingChildren.y.maxHeight, 'minPos': 0 };
 					}
 
 					if (protrudingDirection === 'sn' || protrudingDirection === 'ens' || protrudingDirection === 'wns' || protrudingDirection === 'ewns') {
-						e.dragOptions.offsets.y = { 'max': e.dragOptions.freeze.y.max - e.yPos - e.height + e.dragOptions.freeze.y.maxHeight, 'min': e.yPos - e.dragOptions.freeze.y.min };
+						element.dragOptions.clampedPos.y = { 'maxPos': element.dragOptions.protrudingChildren.y.maxPos - element.yPos - element.height + element.dragOptions.protrudingChildren.y.maxHeight, 'minPos': element.yPos - element.dragOptions.protrudingChildren.y.minPos };
 					}
 					continue;
 				}
 
-				if (e.parentElement) {
-					const parent = this.getInterfaceElement(pInterface, e.parentElement);
-					const noneX = Math.sign(e.xPos - parent.xPos) === -1 ? 0 : e.xPos - parent.xPos;
-					const noneY = Math.sign(e.yPos - parent.yPos) === -1 ? 0 : e.yPos - parent.yPos;
-					e.dragOptions.owner = parent;
+				if (element.parentElement) {
+					const parent = this.getInterfaceElement(pInterface, element.parentElement);
+					const noneX = Math.sign(element.xPos - parent.xPos) === -1 ? 0 : element.xPos - parent.xPos;
+					const noneY = Math.sign(element.yPos - parent.yPos) === -1 ? 0 : element.yPos - parent.yPos;
+					element.dragOptions.owner = parent;
 
 					if (protrudingDirection === 'none') {
-						e.dragOptions.offsets.x.max = Math.sign(e.xPos - parent.xPos) === -1 ? 0 : e.xPos - parent.xPos;
-						e.dragOptions.offsets.x.min = e.dragOptions.offsets.x.max;
-						e.dragOptions.offsets.y.max = Math.sign(e.yPos - parent.yPos) === -1 ? 0 : e.yPos - parent.yPos;
-						e.dragOptions.offsets.y.min = e.dragOptions.offsets.y.max;
+						element.dragOptions.clampedPos.x.maxPos = Math.sign(element.xPos - parent.xPos) === -1 ? 0 : element.xPos - parent.xPos;
+						element.dragOptions.clampedPos.x.minPos = element.dragOptions.clampedPos.x.maxPos;
+						element.dragOptions.clampedPos.y.maxPos = Math.sign(element.yPos - parent.yPos) === -1 ? 0 : element.yPos - parent.yPos;
+						element.dragOptions.clampedPos.y.minPos = element.dragOptions.clampedPos.y.maxPos;
 						continue;
 					}
 
 					if (protrudingDirection === 'n' || protrudingDirection === 's' || protrudingDirection === 'sn') {
-						e.dragOptions.offsets.x = { 'max': noneX, 'min': noneX };
+						element.dragOptions.clampedPos.x = { 'maxPos': noneX, 'minPos': noneX };
 					}
 
 					if (protrudingDirection === 'e' || protrudingDirection === 'es' || protrudingDirection === 'en' || protrudingDirection === 'ens') {
-						e.dragOptions.offsets.x = { 'max': parent.dragOptions.freeze.x.max - e.xPos + e.width, 'min': noneX };
+						element.dragOptions.clampedPos.x = { 'maxPos': parent.dragOptions.protrudingChildren.x.maxPos - element.xPos + element.width, 'minPos': noneX };
 					}
 
 					if (protrudingDirection === 'w' || protrudingDirection === 'ws' || protrudingDirection === 'wns' || protrudingDirection === 'wn') {
-						e.dragOptions.offsets.x = { 'max': e.xPos - parent.xPos, 'min': e.xPos - parent.dragOptions.freeze.x.min };
+						element.dragOptions.clampedPos.x = { 'maxPos': element.xPos - parent.xPos, 'minPos': element.xPos - parent.dragOptions.protrudingChildren.x.minPos };
 					}
 
 					if (protrudingDirection === 'ew' || protrudingDirection === 'ewn' || protrudingDirection === 'ews' || protrudingDirection === 'ewns') {
-						e.dragOptions.offsets.x = { 'max': parent.dragOptions.freeze.x.max - e.xPos + e.width, 'min': e.xPos - parent.dragOptions.freeze.x.min };
+						element.dragOptions.clampedPos.x = { 'maxPos': parent.dragOptions.protrudingChildren.x.maxPos - element.xPos + element.width, 'minPos': element.xPos - parent.dragOptions.protrudingChildren.x.minPos };
 					}
 
 					if (protrudingDirection === 'n' || protrudingDirection === 'wn' || protrudingDirection === 'en' || protrudingDirection === 'ewn') {
-						e.dragOptions.offsets.y = { 'max': e.yPos - parent.yPos, 'min': e.yPos - parent.dragOptions.freeze.y.min };
+						element.dragOptions.clampedPos.y = { 'maxPos': element.yPos - parent.yPos, 'minPos': element.yPos - parent.dragOptions.protrudingChildren.y.minPos };
 					}
 
 					if (protrudingDirection === 's' || protrudingDirection === 'ws' || protrudingDirection === 'es' || protrudingDirection === 'ews') {
-						e.dragOptions.offsets.y = { 'max': parent.dragOptions.freeze.y.max - e.yPos + e.height, 'min': noneY };
+						element.dragOptions.clampedPos.y = { 'maxPos': parent.dragOptions.protrudingChildren.y.maxPos - element.yPos + element.height, 'minPos': noneY };
 					}
 
 					if (protrudingDirection === 'e' || protrudingDirection === 'w' || protrudingDirection === 'ew') {
-						e.dragOptions.offsets.y = { 'max': noneY, 'min': noneY };
+						element.dragOptions.clampedPos.y = { 'maxPos': noneY, 'minPos': noneY };
 					}
 
 					if (protrudingDirection === 'sn' || protrudingDirection === 'ens' || protrudingDirection === 'wns' || protrudingDirection === 'ewns') {
-						e.dragOptions.offsets.y = { 'max': parent.dragOptions.freeze.y.max - e.yPos + e.height, 'min': e.yPos - parent.dragOptions.freeze.y.min };
+						element.dragOptions.clampedPos.y = { 'maxPos': parent.dragOptions.protrudingChildren.y.maxPos - element.yPos + element.height, 'minPos': element.yPos - parent.dragOptions.protrudingChildren.y.minPos };
 					}
 				}
 			}
@@ -808,9 +809,9 @@
 					maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
 				}
 
-				this._dragging.element.setPos(Math.clamp(realX, this._dragging.element.dragOptions.offsets.x.min, maxWidth - this._dragging.element.dragOptions.offsets.x.max), Math.clamp(realY, this._dragging.element.dragOptions.offsets.y.min, maxHeight - this._dragging.element.dragOptions.offsets.y.max));
+				this._dragging.element.setPos(Math.clamp(realX, this._dragging.element.dragOptions.clampedPos.x.minPos, maxWidth - this._dragging.element.dragOptions.clampedPos.x.maxPos), Math.clamp(realY, this._dragging.element.dragOptions.clampedPos.y.minPos, maxHeight - this._dragging.element.dragOptions.clampedPos.y.maxPos));
 
-				if (this._dragging.element.onMove) {
+				if (this._dragging.element.onMove && typeof(this._dragging.element.onMove) === 'function') {
 					this._dragging.element.onMove(this._dragging.element.xPos, this._dragging.element.yPos);
 				}
 
@@ -818,12 +819,12 @@
 					realX += this._dragging.xOff;
 					realY += this._dragging.yOff;
 
-					for (const e of this.getInterfaceElements(this._dragging.element.interfaceName)) {
-						if (e !== this._dragging.element) {
-							if (e.parentElement === this._dragging.element.name) {
-								e.reposition(realX, realY, this._dragging.element.defaultPos.x, this._dragging.element.defaultPos.y);
-								if (e.onMove) {
-									e.onMove(e.xPos, e.yPos);
+					for (const element of this.getInterfaceElements(this._dragging.element.interfaceName)) {
+						if (element !== this._dragging.element) {
+							if (element.parentElement === this._dragging.element.name) {
+								element.reposition(realX, realY, this._dragging.element.defaultPos.x, this._dragging.element.defaultPos.y);
+								if (element.onMove && typeof(element.onMove) === 'function') {
+									element.onMove(element.xPos, element.yPos);
 								}
 							}
 						}
@@ -836,7 +837,7 @@
 
 				this._dragging.element.dragOptions.beingDragged = true;
 
-				if (this._dragging.element.onDragStart) {
+				if (this._dragging.element.onDragStart && typeof(this._dragging.element.onDragStart) === 'function') {
 					this._dragging.element.onDragStart(this._dragging.element.xPos, this._dragging.element.yPos);
 				}
 				// automatically dynamically relayer this element when dragging it so its above everything else
@@ -849,7 +850,7 @@
 							// automatically dynamically relayer the children element when dragging it so its above everything else
 							childElem.plane += MAX_PLANE;
 							childElem.layer += MAX_PLANE;
-							if (childElem.onDragStart) {
+							if (childElem.onDragStart && typeof(childElem.onDragStart) === 'function') {
 								childElem.onDragStart();
 							}
 						}
@@ -917,7 +918,7 @@
 						const realX = (this._dragging.element.preventAutoScale ? pX * this._screenScale.x : pX);
 						const realY = (this._dragging.element.preventAutoScale ? pY * this._screenScale.y : pY);
 						
-						if (this._dragging.element.onDragEnd) {
+						if (this._dragging.element.onDragEnd && typeof(this._dragging.element.onDragEnd) === 'function') {
 							this._dragging.element.onDragEnd(this._dragging.element.xPos, this._dragging.element.yPos);
 						}
 
@@ -931,7 +932,7 @@
 									// automatically dynamically relayer the children elements as well when you stop dragging it so they get their original layering
 									childElem.plane -= MAX_PLANE;
 									childElem.layer -= MAX_PLANE;
-									if (childElem.onDragEnd) {
+									if (childElem.onDragEnd && typeof(childElem.onDragEnd) === 'function') {
 										childElem.onDragEnd();
 									}
 								}
@@ -956,7 +957,7 @@
 
 		// assign the custom onMouseUp function to the client
 		VS.Type.setFunction('Client', 'onMouseUp', onMouseUp);
-		VS.Type.setVariables('Interface', { 'scale': { 'x': 1, 'y': 1 }, 'anchor': { 'x': 0.5, 'y': 0.5 }, '_protruding': { 'east': false, 'west': false, 'north': false, 'south': false }, 'dragOptions': { 'draggable': false, 'beingDragged': false, 'parent': false, 'offsets': { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } } })
+		VS.Type.setVariables('Interface', { 'scale': { 'x': 1, 'y': 1 }, 'anchor': { 'x': 0.5, 'y': 0.5 }, '_protruding': { 'east': false, 'west': false, 'north': false, 'south': false }, 'dragOptions': { 'draggable': false, 'beingDragged': false, 'parent': false, 'clampedPos': { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } } })
 
 		// store the original onNew function if there is one
 		aInterfaceUtils._onNew = VS.Type.getFunction('Interface', 'onNew');
@@ -981,35 +982,31 @@
 						this.dragOptions.titlebar.yPos = 0;
 					}
 				}
-				this.dragOptions.freeze = { 'x': { 'min': 0, 'max': 0, 'minWidth': 0, 'maxWidth': 0 }, 'y': { 'min': 0, 'max': 0, 'minHeight': 0, 'maxHeight': 0 }, 'updateX': false, 'updateX2': false, 'updateY': false, 'updateY2': false };
-				this.dragOptions.offsets = { 'x': { 'max': 0, 'min': 0 }, 'y': { 'max': 0, 'min': 0 } };
-				for (const e of VS.Client.getInterfaceElements(this.interfaceName)) {
-					if (e.parentElement === this.name) {
-						const greaterX = (e.xPos > this.xPos + this.width) && (this.dragOptions.freeze.x.max ? e.xPos > this.dragOptions.freeze.x.max : true);
-						const lesserX = (e.xPos < this.xPos) && (this.dragOptions.freeze.x.min ? e.xPos < this.dragOptions.freeze.x.min : true);
-						const greaterY = (e.yPos > this.yPos + this.height) && (this.dragOptions.freeze.y.max ? e.yPos > this.dragOptions.freeze.y.max : true);
-						const lesserY = (e.yPos < this.yPos) && (this.dragOptions.freeze.y.min ? e.yPos < this.dragOptions.freeze.y.min : true);
+				this.dragOptions.protrudingChildren = { 'x': { 'minPos': 0, 'maxPos': 0, 'minWidth': 0, 'maxWidth': 0 }, 'y': { 'minPos': 0, 'maxPos': 0, 'minHeight': 0, 'maxHeight': 0 }};
+				this.dragOptions.clampedPos = { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } };
+				for (const element of VS.Client.getInterfaceElements(this.interfaceName)) {
+					if (element.parentElement === this.name) {
+						const greaterX = (element.xPos > this.xPos + this.width) && (this.dragOptions.protrudingChildren.x.maxPos ? element.xPos > this.dragOptions.protrudingChildren.x.maxPos : true);
+						const lesserX = (element.xPos < this.xPos) && (this.dragOptions.protrudingChildren.x.minPos ? element.xPos < this.dragOptions.protrudingChildren.x.minPos : true);
+						const greaterY = (element.yPos > this.yPos + this.height) && (this.dragOptions.protrudingChildren.y.maxPos ? element.yPos > this.dragOptions.protrudingChildren.y.maxPos : true);
+						const lesserY = (element.yPos < this.yPos) && (this.dragOptions.protrudingChildren.y.minPos ? element.yPos < this.dragOptions.protrudingChildren.y.minPos : true);
 
 						if (greaterX) {
-							this.dragOptions.freeze.updateX2 = true;
-							this.dragOptions.freeze.x.max = e.xPos;
-							this.dragOptions.freeze.x.maxWidth = e.width;
+							this.dragOptions.protrudingChildren.x.maxPos = element.xPos;
+							this.dragOptions.protrudingChildren.x.maxWidth = element.width;
 							this._protruding.east = true;
 						} else if (lesserX) {
-							this.dragOptions.freeze.updateX = true;
-							this.dragOptions.freeze.x.min = e.xPos;
-							this.dragOptions.freeze.x.minWidth = e.width;
+							this.dragOptions.protrudingChildren.x.minPos = element.xPos;
+							this.dragOptions.protrudingChildren.x.minWidth = element.width;
 							this._protruding.west = true;
 						}
 						if (greaterY) {
-							this.dragOptions.freeze.updateY2 = true;
-							this.dragOptions.freeze.y.max = e.yPos;
-							this.dragOptions.freeze.y.maxHeight = e.height;
+							this.dragOptions.protrudingChildren.y.maxPos = element.yPos;
+							this.dragOptions.protrudingChildren.y.maxHeight = element.height;
 							this._protruding.south = true;
 						} else if (lesserY) {
-							this.dragOptions.freeze.updateY = true;
-							this.dragOptions.freeze.y.min = e.yPos;
-							this.dragOptions.freeze.y.minHeight = e.height;
+							this.dragOptions.protrudingChildren.y.minPos = element.yPos;
+							this.dragOptions.protrudingChildren.y.minHeight = element.height;
 							this._protruding.north = true;
 						}
 					}
@@ -1062,24 +1059,24 @@
 			const protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][this._protruding.east | (this._protruding.west << 1) | (this._protruding.north << 2) | (this._protruding.south << 3)];
 
 			if (protrudingDirection === 'none') {
-				this.setPos(Math.clamp(pX - xOff + this.defaultPos.x - pDefaultX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.owner.width + this.dragOptions.offsets.x.min), Math.clamp(pY - yOff + this.defaultPos.y - pDefaultY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.owner.height + this.dragOptions.offsets.y.min));
+				this.setPos(Math.clamp(pX - xOff + this.defaultPos.x - pDefaultX, this.dragOptions.clampedPos.x.minPos, size.width - this.dragOptions.owner.width + this.dragOptions.clampedPos.x.minPos), Math.clamp(pY - yOff + this.defaultPos.y - pDefaultY, this.dragOptions.clampedPos.y.minPos, size.height - this.dragOptions.owner.height + this.dragOptions.clampedPos.y.minPos));
 				return;
 			}
 
 			if (protrudingDirection === 'n' || protrudingDirection === 's' || protrudingDirection === 'w' || protrudingDirection === 'wn' || protrudingDirection === 'ws' || protrudingDirection === 'sn' || protrudingDirection === 'wns') {
-				this.xPos = Math.clamp(pX - xOff + this.defaultPos.x - pDefaultX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.owner.width + this.dragOptions.offsets.x.max);
+				this.xPos = Math.clamp(pX - xOff + this.defaultPos.x - pDefaultX, this.dragOptions.clampedPos.x.minPos, size.width - this.dragOptions.owner.width + this.dragOptions.clampedPos.x.maxPos);
 			}
 
 			if (protrudingDirection === 'e' || protrudingDirection === 'ew' || protrudingDirection === 'es' || protrudingDirection === 'en' || protrudingDirection === 'ewn' || protrudingDirection === 'ews' || protrudingDirection === 'ewns' || protrudingDirection === 'ens') {
-				this.xPos = Math.clamp(pX - xOff + this.defaultPos.x - pDefaultX, this.dragOptions.offsets.x.min, size.width - this.dragOptions.offsets.x.max);
+				this.xPos = Math.clamp(pX - xOff + this.defaultPos.x - pDefaultX, this.dragOptions.clampedPos.x.minPos, size.width - this.dragOptions.clampedPos.x.maxPos);
 			}
 
 			if (protrudingDirection === 'n' || protrudingDirection === 'e' || protrudingDirection === 'w' || protrudingDirection === 'wn' || protrudingDirection === 'ew' || protrudingDirection === 'en' || protrudingDirection === 'ewn') {
-				this.yPos = Math.clamp(pY - yOff + this.defaultPos.y - pDefaultY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.owner.height + this.dragOptions.offsets.y.max);
+				this.yPos = Math.clamp(pY - yOff + this.defaultPos.y - pDefaultY, this.dragOptions.clampedPos.y.minPos, size.height - this.dragOptions.owner.height + this.dragOptions.clampedPos.y.maxPos);
 			}
 
 			if (protrudingDirection === 's' || protrudingDirection === 'ws' || protrudingDirection === 'sn' || protrudingDirection === 'es' || protrudingDirection === 'ews' || protrudingDirection === 'ewns' || protrudingDirection === 'ens' || protrudingDirection === 'wns') {
-				this.yPos = Math.clamp(pY - yOff + this.defaultPos.y - pDefaultY, this.dragOptions.offsets.y.min, size.height - this.dragOptions.offsets.y.max);
+				this.yPos = Math.clamp(pY - yOff + this.defaultPos.y - pDefaultY, this.dragOptions.clampedPos.y.minPos, size.height - this.dragOptions.clampedPos.y.maxPos);
 			}
 		}
 
