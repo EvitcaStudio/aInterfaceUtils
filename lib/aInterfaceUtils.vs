@@ -812,7 +812,7 @@
 				this._dragging.element.setPos(Math.clamp(realX, this._dragging.element.dragOptions.clampedPos.x.minPos, maxWidth - this._dragging.element.dragOptions.clampedPos.x.maxPos), Math.clamp(realY, this._dragging.element.dragOptions.clampedPos.y.minPos, maxHeight - this._dragging.element.dragOptions.clampedPos.y.maxPos));
 
 				if (this._dragging.element.onMove && typeof(this._dragging.element.onMove) === 'function') {
-					this._dragging.element.onMove(this._dragging.element.xPos, this._dragging.element.yPos);
+					this._dragging.element.onMove();
 				}
 
 				if (this._dragging.element.dragOptions.parent) {
@@ -824,7 +824,7 @@
 							if (element.parentElement === this._dragging.element.name) {
 								element.reposition(realX, realY, this._dragging.element.defaultPos.x, this._dragging.element.defaultPos.y);
 								if (element.onMove && typeof(element.onMove) === 'function') {
-									element.onMove(element.xPos, element.yPos);
+									element.onMove();
 								}
 							}
 						}
@@ -838,7 +838,7 @@
 				this._dragging.element.dragOptions.beingDragged = true;
 
 				if (this._dragging.element.onDragStart && typeof(this._dragging.element.onDragStart) === 'function') {
-					this._dragging.element.onDragStart(this._dragging.element.xPos, this._dragging.element.yPos);
+					this._dragging.element.onDragStart();
 				}
 				// automatically dynamically relayer this element when dragging it so its above everything else
 				this._dragging.element.plane += MAX_PLANE;
@@ -909,41 +909,42 @@
 		// store the original onMouseUp function if there is one
 		aInterfaceUtils._onMouseUp = VS.Type.getFunction('Client', 'onMouseUp');
 
+		const releaseElement = function() {
+			const MAX_PLANE = 999999;
+			if (this._dragging.element.dragOptions.beingDragged) {
+				if (this._dragging.element.onDragEnd && typeof(this._dragging.element.onDragEnd) === 'function') {
+					this._dragging.element.onDragEnd();
+				}
+
+				// automatically dynamically relayer this element when you stop dragging it so it gets its original layering
+				this._dragging.element.plane -= MAX_PLANE;
+				this._dragging.element.layer -= MAX_PLANE;
+
+				for (const childElem of this.getInterfaceElements(this._dragging.element.interfaceName)) {
+					if (childElem !== this._dragging.element) {
+						if (childElem.parentElement === this._dragging.element.name) {
+							// automatically dynamically relayer the children elements as well when you stop dragging it so they get their original layering
+							childElem.plane -= MAX_PLANE;
+							childElem.layer -= MAX_PLANE;
+							if (childElem.onDragEnd && typeof(childElem.onDragEnd) === 'function') {
+								childElem.onDragEnd();
+							}
+						}
+					}
+				}
+
+				this._dragging.element.dragOptions.beingDragged = false;
+				this._dragging.element = null;
+				this.dragging = false;
+				return;
+			}
+		}
+
 		// the function that will be used as the `pClient.onMouseUp` function
 		const onMouseUp = function(pDiob, pX, pY, pButton) {
 			if (pButton === 1) {
 				if (this._dragging.element) {
-					const MAX_PLANE = 999999;
-					if (this._dragging.element.dragOptions.beingDragged) {
-						const realX = (this._dragging.element.preventAutoScale ? pX * this._screenScale.x : pX);
-						const realY = (this._dragging.element.preventAutoScale ? pY * this._screenScale.y : pY);
-						
-						if (this._dragging.element.onDragEnd && typeof(this._dragging.element.onDragEnd) === 'function') {
-							this._dragging.element.onDragEnd(this._dragging.element.xPos, this._dragging.element.yPos);
-						}
-
-						// automatically dynamically relayer this element when you stop dragging it so it gets its original layering
-						this._dragging.element.plane -= MAX_PLANE;
-						this._dragging.element.layer -= MAX_PLANE;
-
-						for (const childElem of this.getInterfaceElements(this._dragging.element.interfaceName)) {
-							if (childElem !== this._dragging.element) {
-								if (childElem.parentElement === this._dragging.element.name) {
-									// automatically dynamically relayer the children elements as well when you stop dragging it so they get their original layering
-									childElem.plane -= MAX_PLANE;
-									childElem.layer -= MAX_PLANE;
-									if (childElem.onDragEnd && typeof(childElem.onDragEnd) === 'function') {
-										childElem.onDragEnd();
-									}
-								}
-							}
-						}
-
-						this._dragging.element.dragOptions.beingDragged = false;
-						this._dragging.element = null;
-						this.dragging = false;
-						return;
-					}
+					this.releaseElement();
 				}
 
 				this._dragging.element = null;
@@ -955,7 +956,9 @@
 			}
 		}
 
-		// assign the custom onMouseUp function to the client
+		// assign the release element function to the Client type
+		VS.Type.setFunction('Client', 'releaseElement', releaseElement);
+		// assign the custom onMouseUp function to the Client type
 		VS.Type.setFunction('Client', 'onMouseUp', onMouseUp);
 		VS.Type.setVariables('Interface', { 'scale': { 'x': 1, 'y': 1 }, 'anchor': { 'x': 0.5, 'y': 0.5 }, '_protruding': { 'east': false, 'west': false, 'north': false, 'south': false }, 'dragOptions': { 'draggable': false, 'beingDragged': false, 'parent': false, 'clampedPos': { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } } })
 
@@ -1082,6 +1085,43 @@
 
 		// give this reposition function to the interface type
 		VS.Type.setFunction('Interface', 'reposition', reposition);
+
+		const leave = () => {
+			if (!aInterfaceUtils.mouseOffScreen) {
+				aInterfaceUtils.mouseOffScreen = true;
+				if (VS.Client._dragging.element) {
+					VS.Client.releaseElement();
+				}
+				if (VS.Client.onMouseLeave && typeof(VS.Client.onMouseLeave) === 'function') {
+					VS.Client.onMouseLeave();
+				}
+			}	
+		}
+
+		const enter = () => {
+			if (aInterfaceUtils.mouseOffScreen) {
+				aInterfaceUtils.mouseOffScreen = false;
+				if (VS.Client.onMouseEnter && typeof(VS.Client.onMouseEnter) === 'function') {
+					VS.Client.onMouseEnter();
+				}
+			}
+		}
+
+		document.addEventListener('mouseleave', (pEvent) => {
+			leave();
+		});
+
+		document.addEventListener('mouseenter', (pEvent) => {
+			enter();
+		});
+
+		document.addEventListener('mousemove', (pEvent) => {
+			if (pEvent.clientY <= 0 || pEvent.clientX <= 0 || pEvent.clientX >= window.innerWidth || pEvent.clientY >= window.innerHeight) {
+				leave();
+			} else if (aInterfaceUtils.mouseOffScreen) {
+				enter();
+			}
+		});
 	}
 
 })();
