@@ -29,14 +29,14 @@
 				if (this.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu').shown) {
 					if (pButton === 1) {
 						if (!pDiob || pDiob.baseType !== 'Interface') {
-							VS.World.global.aInterfaceUtils.inInput = false;
+							this.aInterfaceUtils.inInput = false;
 							/* this.setMacroAtlas(this.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu').storedMacroAtlas); */
 							this.setFocus();
 						}
 					}
 				}
-				if (VS.World.global.aInterfaceUtils._onMouseClick) {
-					VS.World.global.aInterfaceUtils._onMouseClick.apply(this, arguments);
+				if (this.aInterfaceUtils._onMouseClick) {
+					this.aInterfaceUtils._onMouseClick.apply(this, arguments);
 				}
 			}
 		}
@@ -52,7 +52,7 @@
 
 		// alert
 		VS.Client.addCommand('closeAlertMenu', function() {
-			VS.World.global.aInterfaceUtils.closeAlertMenu();
+			this.aInterfaceUtils.closeAlertMenu();
 		});
 		VS.Client.addCommand('leftArrowSelectAlert', function() {
 
@@ -62,7 +62,7 @@
 		});
 		// input
 		VS.Client.addCommand('closeInputMenu', function() {
-			VS.World.global.aInterfaceUtils.closeInputMenu();
+			this.aInterfaceUtils.closeInputMenu();
 		});
 		VS.Client.addCommand('leftArrowSelectInput', function() {
 
@@ -72,7 +72,7 @@
 		});
 		// confirm
 		VS.Client.addCommand('closeConfirmMenu', function() {
-			VS.World.global.aInterfaceUtils.closeConfirmMenu();
+			this.aInterfaceUtils.closeConfirmMenu();
 		});
 		VS.Client.addCommand('leftArrowSelectConfirm', function() {
 
@@ -455,7 +455,7 @@
 				alertMenu.queueTracker++;
 				count = alertMenu.queueTracker;
 				setTimeout(function() {
-					VS.World.global.aInterfaceUtils.alert(alertMenu.queuedAlerts['message' + count], alertMenu.queuedAlerts['title' + count], alertMenu.queuedAlerts['callback' + count], alertMenu.queuedAlerts['parameters' + count]);
+					VS.Client.aInterfaceUtils.alert(alertMenu.queuedAlerts['message' + count], alertMenu.queuedAlerts['title' + count], alertMenu.queuedAlerts['callback' + count], alertMenu.queuedAlerts['parameters' + count]);
 				}, 500);
 				alertMenu.itemsInQueue--;
 			} else {
@@ -542,7 +542,7 @@
 				inputMenu.queueTracker++;
 				count = inputMenu.queueTracker;
 				setTimeout(function() {
-					VS.World.global.aInterfaceUtils.input(inputMenu.queuedInputs['text' + count], inputMenu.queuedInputs['defaultText' + count], inputMenu.queuedInputs['numbersOnly' + count], inputMenu.queuedInputs['callback' + count], inputMenu.queuedInputs['parameters' + count]);
+					VS.Client.aInterfaceUtils.input(inputMenu.queuedInputs['text' + count], inputMenu.queuedInputs['defaultText' + count], inputMenu.queuedInputs['numbersOnly' + count], inputMenu.queuedInputs['callback' + count], inputMenu.queuedInputs['parameters' + count]);
 				}, 500);
 				inputMenu.itemsInQueue--;
 			} else {
@@ -603,7 +603,7 @@
 				confirmMenu.queueTracker++;
 				count = confirmMenu.queueTracker;
 				setTimeout(function() {
-					VS.World.global.aInterfaceUtils.confirm(confirmMenu.queuedDialogs['message' + count], confirmMenu.queuedDialogs['title' + count], confirmMenu.queuedDialogs['callback' + count], confirmMenu.queuedDialogs['parameters' + count]);
+					VS.Client.aInterfaceUtils.confirm(confirmMenu.queuedDialogs['message' + count], confirmMenu.queuedDialogs['title' + count], confirmMenu.queuedDialogs['callback' + count], confirmMenu.queuedDialogs['parameters' + count]);
 				}, 500);
 				confirmMenu.itemsInQueue--;
 			} else {
@@ -620,11 +620,8 @@
 		VS.World.global.aInterfaceUtils = aInterfaceUtils;
 		VS.Type.setVariables('Client', { '___EVITCA_aInterfaceUtils': true });
 
-		// store the original onConnect function if there is one
-		aInterfaceUtils._onConnect = VS.Type.getFunction('Client', 'onConnect');
-
 		const isMousedDown = function() {
-			if (VS.Client._mousedDowned === this) {
+			if (VS.Client._mousedDowned === this && !VS.Client.dragging) {
 				return true;
 			}
 			return false;
@@ -640,6 +637,9 @@
 		}
 
 		VS.Type.setFunction('Diob', 'super', superFunction);
+		
+		// store the original onConnect function if there is one
+		aInterfaceUtils._onConnect = VS.Type.getFunction('Client', 'onConnect');
 
 		// the function that will be used as the `pClient.onConnect` function
 		const onConnect = function() {
@@ -658,6 +658,20 @@
 		// assign the custom onConnect function to the client
 		VS.Type.setFunction('Client', 'onConnect', onConnect);
 
+		// store the original onWindowFocus function if there is one
+		aInterfaceUtils._onWindowFocus = VS.Type.getFunction('Client', 'onWindowFocus');
+
+		// the function that will be used as the `pClient.onWindowFocus` function
+		const onWindowFocus = function() {
+			VS.World.global.aInterfaceUtils.preventMouseMoveEvent = true;
+			if (VS.World.global.aInterfaceUtils._onWindowFocus) {
+				VS.World.global.aInterfaceUtils._onWindowFocus.apply(this);
+			}
+		}
+
+		// assign the custom onWindowFocus function to the client
+		VS.Type.setFunction('Client', 'onWindowFocus', onWindowFocus);
+
 		// store the original onWindowResize function if there is one
 		aInterfaceUtils._onWindowResize = VS.Type.getFunction('Client', 'onWindowResize');
 
@@ -671,8 +685,8 @@
 			if (this.___EVITCA_aInventory) {
 				this.aInventory.outlineFilter.thickness = this.aInventory.outlineDefaultThickness * mainM.mapScaleWidth;
 			}
-			if (VS.World.global.aInterfaceUtils._onWindowResize) {
-				VS.World.global.aInterfaceUtils._onWindowResize.apply(this, arguments);
+			if (this.aInterfaceUtils._onWindowResize) {
+				this.aInterfaceUtils._onWindowResize.apply(this, arguments);
 			}
 		}
 
@@ -791,75 +805,85 @@
 		// the function that will be used as the `pClient.onMouseMove` function
 		const onMouseMove = function(pDiob, pX, pY) {
 			if (this._dragging.element) {
+				if (this.aInterfaceUtils.preventMouseMoveEvent) {
+					this.aInterfaceUtils.preventMouseMoveEvent = false;
+					return;
+				}
 				const MAX_PLANE = 999999;
 				let realX = (this._dragging.element.preventAutoScale ? pX * this._screenScale.x : pX) - this._dragging.xOff;
 				let realY = (this._dragging.element.preventAutoScale ? pY * this._screenScale.y : pY) - this._dragging.yOff;
 				let maxWidth;
 				let maxHeight;
 
-				if (this._dragging.element.dragOptions?.titlebar?.xPos >= 0 && this._dragging.element.dragOptions?.titlebar?.yPos >= 0 && this._dragging.element.dragOptions?.titlebar?.width > 0 && this._dragging.element.dragOptions?.titlebar?.height > 0) {
-					const titleBarX = this._dragging.element.xPos + this._dragging.element.dragOptions.titlebar.xPos;
-					const titleBarWidthX = titleBarX + this._dragging.element.dragOptions.titlebar.width;
-					const titleBarY = this._dragging.element.yPos + this._dragging.element.dragOptions.titlebar.yPos;
-					const titleBarHeightY = titleBarY + this._dragging.element.dragOptions.titlebar.height;
-					maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
-					maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
-				} else {
-					maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
-					maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
+				if (!this.dragging) {
+					this.dragging = true;
 				}
 
-				this._dragging.element.setPos(Math.clamp(realX, this._dragging.element.dragOptions.clampedPos.x.minPos, maxWidth - this._dragging.element.dragOptions.clampedPos.x.maxPos), Math.clamp(realY, this._dragging.element.dragOptions.clampedPos.y.minPos, maxHeight - this._dragging.element.dragOptions.clampedPos.y.maxPos));
+				if (this.dragging) {
+					if (this._dragging.element.dragOptions?.titlebar?.xPos >= 0 && this._dragging.element.dragOptions?.titlebar?.yPos >= 0 && this._dragging.element.dragOptions?.titlebar?.width > 0 && this._dragging.element.dragOptions?.titlebar?.height > 0) {
+						const titleBarX = this._dragging.element.xPos + this._dragging.element.dragOptions.titlebar.xPos;
+						const titleBarWidthX = titleBarX + this._dragging.element.dragOptions.titlebar.width;
+						const titleBarY = this._dragging.element.yPos + this._dragging.element.dragOptions.titlebar.yPos;
+						const titleBarHeightY = titleBarY + this._dragging.element.dragOptions.titlebar.height;
+						maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
+						maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
+					} else {
+						maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
+						maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
+					}
 
-				if (this._dragging.element.onMove && typeof(this._dragging.element.onMove) === 'function') {
-					this._dragging.element.onMove();
-				}
+					this._dragging.element.setPos(Math.clamp(realX, this._dragging.element.dragOptions.clampedPos.x.minPos, maxWidth - this._dragging.element.dragOptions.clampedPos.x.maxPos), Math.clamp(realY, this._dragging.element.dragOptions.clampedPos.y.minPos, maxHeight - this._dragging.element.dragOptions.clampedPos.y.maxPos));
 
-				if (this._dragging.element.dragOptions.parent) {
-					realX += this._dragging.xOff;
-					realY += this._dragging.yOff;
+					if (this._dragging.element.onMove && typeof(this._dragging.element.onMove) === 'function') {
+						this._dragging.element.onMove();
+					}
 
-					for (const element of this.getInterfaceElements(this._dragging.element.interfaceName)) {
-						if (element !== this._dragging.element) {
-							if (element.parentElement === this._dragging.element.name) {
-								element.reposition(realX, realY, this._dragging.element.defaultPos.x, this._dragging.element.defaultPos.y);
-								if (element.onMove && typeof(element.onMove) === 'function') {
-									element.onMove();
+					if (this._dragging.element.dragOptions.parent) {
+						realX += this._dragging.xOff;
+						realY += this._dragging.yOff;
+
+						for (const element of this.getInterfaceElements(this._dragging.element.interfaceName)) {
+							if (element !== this._dragging.element) {
+								if (element.parentElement === this._dragging.element.name) {
+									element.reposition(realX, realY, this._dragging.element.defaultPos.x, this._dragging.element.defaultPos.y);
+									if (element.onMove && typeof(element.onMove) === 'function') {
+										element.onMove();
+									}
 								}
 							}
 						}
 					}
-				}
 
-				if (this._dragging.element.dragOptions.beingDragged) {
-					return;
-				}
+					if (this._dragging.element.dragOptions.beingDragged) {
+						return;
+					}
 
-				this._dragging.element.dragOptions.beingDragged = true;
+					this._dragging.element.dragOptions.beingDragged = true;
 
-				if (this._dragging.element.onDragStart && typeof(this._dragging.element.onDragStart) === 'function') {
-					this._dragging.element.onDragStart();
-				}
-				// automatically dynamically relayer this element when dragging it so its above everything else
-				this._dragging.element.plane += MAX_PLANE;
-				this._dragging.element.layer += MAX_PLANE;
+					if (this._dragging.element.onDragStart && typeof(this._dragging.element.onDragStart) === 'function') {
+						this._dragging.element.onDragStart();
+					}
+					// automatically dynamically relayer this element when dragging it so its above everything else
+					this._dragging.element.plane += MAX_PLANE;
+					this._dragging.element.layer += MAX_PLANE;
 
-				for (const childElem of this.getInterfaceElements(this._dragging.element.interfaceName)) {
-					if (childElem !== this._dragging.element) {
-						if (childElem.parentElement === this._dragging.element.name) {
-							// automatically dynamically relayer the children element when dragging it so its above everything else
-							childElem.plane += MAX_PLANE;
-							childElem.layer += MAX_PLANE;
-							if (childElem.onDragStart && typeof(childElem.onDragStart) === 'function') {
-								childElem.onDragStart();
+					for (const childElem of this.getInterfaceElements(this._dragging.element.interfaceName)) {
+						if (childElem !== this._dragging.element) {
+							if (childElem.parentElement === this._dragging.element.name) {
+								// automatically dynamically relayer the children element when dragging it so its above everything else
+								childElem.plane += MAX_PLANE;
+								childElem.layer += MAX_PLANE;
+								if (childElem.onDragStart && typeof(childElem.onDragStart) === 'function') {
+									childElem.onDragStart();
+								}
 							}
 						}
 					}
 				}
 			}
 
-			if (VS.World.global.aInterfaceUtils._onMouseMove) {
-				VS.World.global.aInterfaceUtils._onMouseMove.apply(this, arguments);
+			if (this.aInterfaceUtils._onMouseMove) {
+				this.aInterfaceUtils._onMouseMove.apply(this, arguments);
 			}
 		}
 
@@ -886,7 +910,6 @@
 								this._dragging.element = pDiob;
 								this._dragging.xOff = realX - titleBarX + pDiob.dragOptions.titlebar.xPos;
 								this._dragging.yOff = realY - titleBarY + pDiob.dragOptions.titlebar.yPos;
-								this.dragging = true;
 							}
 							return;
 						}
@@ -894,12 +917,11 @@
 						this._dragging.element = pDiob;
 						this._dragging.xOff = realX - pDiob.xPos;
 						this._dragging.yOff = realY - pDiob.yPos;
-						this.dragging = true;
 					}
 				}
 			}
-			if (VS.World.global.aInterfaceUtils._onMouseDown) {
-				VS.World.global.aInterfaceUtils._onMouseDown.apply(this, arguments);
+			if (this.aInterfaceUtils._onMouseDown) {
+				this.aInterfaceUtils._onMouseDown.apply(this, arguments);
 			}
 		}
 
@@ -911,6 +933,7 @@
 
 		const releaseElement = function() {
 			const MAX_PLANE = 999999;
+			const self = this;
 			if (this._dragging.element.dragOptions.beingDragged) {
 				if (this._dragging.element.onDragEnd && typeof(this._dragging.element.onDragEnd) === 'function') {
 					this._dragging.element.onDragEnd();
@@ -932,12 +955,12 @@
 						}
 					}
 				}
-
-				this._dragging.element.dragOptions.beingDragged = false;
-				this._dragging.element = null;
-				this.dragging = false;
-				return;
 			}
+			setTimeout(() => {
+				self._dragging.element.dragOptions.beingDragged = false;
+				self._dragging.element = null;
+				self.dragging = false;
+			});
 		}
 
 		// the function that will be used as the `pClient.onMouseUp` function
@@ -946,13 +969,10 @@
 				if (this._dragging.element) {
 					this.releaseElement();
 				}
-
-				this._dragging.element = null;
-				this.dragging = false;
 			}
 
-			if (VS.World.global.aInterfaceUtils._onMouseUp) {
-				VS.World.global.aInterfaceUtils._onMouseUp.apply(this, arguments);
+			if (this.aInterfaceUtils._onMouseUp) {
+				this.aInterfaceUtils._onMouseUp.apply(this, arguments);
 			}
 		}
 
@@ -961,6 +981,34 @@
 		// assign the custom onMouseUp function to the Client type
 		VS.Type.setFunction('Client', 'onMouseUp', onMouseUp);
 		VS.Type.setVariables('Interface', { 'scale': { 'x': 1, 'y': 1 }, 'anchor': { 'x': 0.5, 'y': 0.5 }, '_protruding': { 'east': false, 'west': false, 'north': false, 'south': false }, 'dragOptions': { 'draggable': false, 'beingDragged': false, 'parent': false, 'clampedPos': { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } } })
+
+		aInterfaceUtils.handleMouseOverDragArea = function(pReset) {
+			if (pReset) {
+				// If the aInventory library is present, you cannot change the mouse cursor if a slot is being held
+				if (VS.Client.___EVITCA_aInventory) {
+					// When you are dragging something from an inventory this will not allow the mouse cursor to be changed.
+					if (!VS.Client.aInventory.isHoldingSlot) {
+						VS.Client.setMouseCursor('');
+						VS.Client.aInterfaceUtils.cursor = '';
+					}				
+				} else {
+					VS.Client.setMouseCursor('');
+					VS.Client.aInterfaceUtils.cursor = '';
+				}
+				return;
+			}
+			// If the aInventory library is present, you cannot change the mouse cursor if a slot is being held
+			if (VS.Client.___EVITCA_aInventory) {
+				// When you are dragging something from an inventory this will not allow the mouse cursor to be changed.
+				if (!VS.Client.aInventory.isHoldingSlot) {
+					VS.Client.setMouseCursor('move');
+					VS.Client.aInterfaceUtils.cursor = 'move';
+				}
+			} else if (VS.Client.aInterfaceUtils.cursor !== 'move') {
+				VS.Client.setMouseCursor('move');
+				VS.Client.aInterfaceUtils.cursor = 'move';
+			}
+		}
 
 		// store the original onNew function if there is one
 		aInterfaceUtils._onNew = VS.Type.getFunction('Interface', 'onNew');
@@ -983,6 +1031,67 @@
 
 					if (!this.dragOptions.titlebar.yPos) {
 						this.dragOptions.titlebar.yPos = 0;
+					}
+				}
+
+				if (!this.aIntefaceUtilsonMouseEnterSet) {
+					this.aIntefaceUtilsonMouseEnter = this.onMouseEnter;
+					this.aIntefaceUtilsonMouseEnterSet = true;
+					this.onMouseEnter = function(pClient, pX, pY) {
+						if (this.dragOptions.titlebar) {
+							if (this.dragOptions.titlebar.xPos >= 0 && this.dragOptions.titlebar.yPos >= 0 && this.dragOptions.titlebar.width > 0 && this.dragOptions.titlebar.height > 0) {
+								const realX = this.xPos + pX;
+								const realY = this.yPos + pY;
+								const titleBarX = this.xPos + this.dragOptions.titlebar.xPos;
+								const titleBarWidthX = titleBarX + this.dragOptions.titlebar.width;
+								const titleBarY = this.yPos + this.dragOptions.titlebar.yPos;
+								const titleBarHeightY = titleBarY + this.dragOptions.titlebar.height;
+								if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY) {
+									VS.Client.aInterfaceUtils.handleMouseOverDragArea();
+								}
+							}
+							if (this.aIntefaceUtilsonMouseEnter) {
+								this.aIntefaceUtilsonMouseEnter.apply(this, arguments);
+							}
+						} else if (this.dragOptions.draggable) {
+							VS.Client.aInterfaceUtils.handleMouseOverDragArea();
+						}
+					}
+				}
+
+				if (!this.aIntefaceUtilsonMouseExitSet) {
+					this.aIntefaceUtilsonMouseExit = this.onMouseExit;
+					this.aIntefaceUtilsonMouseExitSet = true;
+					this.onMouseExit = function(pClient, pX, pY) {
+						VS.Client.aInterfaceUtils.handleMouseOverDragArea(true);
+						if (this.aIntefaceUtilsonMouseExit) {
+							this.aIntefaceUtilsonMouseExit.apply(this, arguments);
+						}
+					}
+				}
+
+				if (!this.aIntefaceUtilsonMouseMoveSet) {
+					this.aIntefaceUtilsonMouseMove = this.onMouseMove;
+					this.aIntefaceUtilsonMouseMoverSet = true;
+					this.onMouseMove = function(pClient, pX, pY) {
+						if (this.dragOptions.titlebar) {
+							if (this.dragOptions.titlebar.xPos >= 0 && this.dragOptions.titlebar.yPos >= 0 && this.dragOptions.titlebar.width > 0 && this.dragOptions.titlebar.height > 0) {
+								const realX = this.xPos + pX;
+								const realY = this.yPos + pY;
+								const titleBarX = this.xPos + this.dragOptions.titlebar.xPos;
+								const titleBarWidthX = titleBarX + this.dragOptions.titlebar.width;
+								const titleBarY = this.yPos + this.dragOptions.titlebar.yPos;
+								const titleBarHeightY = titleBarY + this.dragOptions.titlebar.height;
+								if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY) {
+									VS.Client.aInterfaceUtils.handleMouseOverDragArea();
+								} else {
+									VS.Client.aInterfaceUtils.handleMouseOverDragArea(true);
+								}
+							}
+							if (this.aIntefaceUtilsonMouseMove) {
+								this.aIntefaceUtilsonMouseMove.apply(this, arguments);
+							}
+						}
 					}
 				}
 				this.dragOptions.protrudingChildren = { 'x': { 'minPos': 0, 'maxPos': 0, 'minWidth': 0, 'maxWidth': 0 }, 'y': { 'minPos': 0, 'maxPos': 0, 'minHeight': 0, 'maxHeight': 0 }};
@@ -1016,8 +1125,8 @@
 				}
 			}
 
-			if (VS.World.global.aInterfaceUtils._onNew) {
-				VS.World.global.aInterfaceUtils._onNew.apply(this, arguments);
+			if (VS.Client.aInterfaceUtils._onNew) {
+				VS.Client.aInterfaceUtils._onNew.apply(this, arguments);
 			}
 		}
 
@@ -1030,8 +1139,8 @@
 		// the function that will be used as the `Interface.onShow` function
 		const onShow = function(pClient) {
 			this.shown = true;
-			if (VS.World.global.aInterfaceUtils._onShow) {
-				VS.World.global.aInterfaceUtils._onShow.apply(this, arguments);
+			if (VS.Client.aInterfaceUtils._onShow) {
+				VS.Client.aInterfaceUtils._onShow.apply(this, arguments);
 			}
 		}
 
@@ -1044,8 +1153,8 @@
 		// the function that will be used as the `Interface.onHide` function
 		const onHide = function(pClient) {
 			this.shown = false;
-			if (VS.World.global.aInterfaceUtils._onHide) {
-				VS.World.global.aInterfaceUtils._onHide.apply(this, arguments);
+			if (VS.Client.aInterfaceUtils._onHide) {
+				VS.Client.aInterfaceUtils._onHide.apply(this, arguments);
 			}
 		}
 		
@@ -1087,22 +1196,27 @@
 		VS.Type.setFunction('Interface', 'reposition', reposition);
 
 		const leave = () => {
-			if (!aInterfaceUtils.mouseOffScreen) {
-				aInterfaceUtils.mouseOffScreen = true;
-				if (VS.Client._dragging.element) {
-					VS.Client.releaseElement();
+			if (VS.Client) {
+				if (!aInterfaceUtils.mouseOffScreen) {
+					aInterfaceUtils.mouseOffScreen = true;
+					if (VS.Client._dragging.element) {
+						VS.Client.releaseElement();
+					}
+					if (VS.Client.onMouseLeave && typeof(VS.Client.onMouseLeave) === 'function') {
+						VS.Client.onMouseLeave();
+					}
 				}
-				if (VS.Client.onMouseLeave && typeof(VS.Client.onMouseLeave) === 'function') {
-					VS.Client.onMouseLeave();
-				}
-			}	
+				VS.Client.setMouseCursor('');
+			}
 		}
 
 		const enter = () => {
-			if (aInterfaceUtils.mouseOffScreen) {
-				aInterfaceUtils.mouseOffScreen = false;
-				if (VS.Client.onMouseEnter && typeof(VS.Client.onMouseEnter) === 'function') {
-					VS.Client.onMouseEnter();
+			if (VS.Client) {
+				if (aInterfaceUtils.mouseOffScreen) {
+					aInterfaceUtils.mouseOffScreen = false;
+					if (VS.Client.onMouseEnter && typeof(VS.Client.onMouseEnter) === 'function') {
+						VS.Client.onMouseEnter();
+					}
 				}
 			}
 		}
