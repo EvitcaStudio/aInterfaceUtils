@@ -1130,7 +1130,7 @@
 			}
 		}
 
-		// assign the custom onShow function to the Interface type
+		// assign the custom onNew function to the Interface type
 		VS.Type.setFunction('Interface', 'onNew', onNew);
 
 		// store the original onShow function if there is one
@@ -1199,11 +1199,13 @@
 			if (VS.Client) {
 				if (!aInterfaceUtils.mouseOffScreen) {
 					aInterfaceUtils.mouseOffScreen = true;
-					if (VS.Client._dragging.element) {
-						VS.Client.releaseElement();
-					}
-					if (VS.Client.onMouseLeave && typeof(VS.Client.onMouseLeave) === 'function') {
-						VS.Client.onMouseLeave();
+					if (VS.Client._dragging) {
+						if (VS.Client._dragging.element) {
+							VS.Client.releaseElement();
+						}
+						if (VS.Client.onMouseLeave && typeof(VS.Client.onMouseLeave) === 'function') {
+							VS.Client.onMouseLeave();
+						}
 					}
 				}
 				VS.Client.setMouseCursor('');
