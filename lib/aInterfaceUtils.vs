@@ -907,17 +907,19 @@
 					if (pDiob.dragOptions.draggable) {
 						const realX = (pDiob.preventAutoScale ? pX * this._screenScale.x : pX);
 						const realY = (pDiob.preventAutoScale ? pY * this._screenScale.y : pY);
-						if (pDiob.dragOptions?.titlebar?.xPos >= 0 && pDiob.dragOptions?.titlebar?.yPos >= 0 && pDiob.dragOptions?.titlebar?.width > 0 && pDiob.dragOptions?.titlebar?.height > 0) {
-							const titleBarX = pDiob.xPos + pDiob.dragOptions.titlebar.xPos;
-							const titleBarWidthX = titleBarX + pDiob.dragOptions.titlebar.width;
-							const titleBarY = pDiob.yPos + pDiob.dragOptions.titlebar.yPos;
-							const titleBarHeightY = titleBarY + pDiob.dragOptions.titlebar.height;
-							if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY) {
-								this._dragging.element = pDiob;
-								this._dragging.xOff = realX - titleBarX + pDiob.dragOptions.titlebar.xPos;
-								this._dragging.yOff = realY - titleBarY + pDiob.dragOptions.titlebar.yPos;
+						if (pDiob.dragOptions.titlebar) {
+							if (pDiob.dragOptions.titlebar.xPos >= 0 && pDiob.dragOptions.titlebar.yPos >= 0 && pDiob.dragOptions.titlebar.width > 0 && pDiob.dragOptions.titlebar.height > 0) {
+								const titleBarX = pDiob.xPos + pDiob.dragOptions.titlebar.xPos;
+								const titleBarWidthX = titleBarX + pDiob.dragOptions.titlebar.width;
+								const titleBarY = pDiob.yPos + pDiob.dragOptions.titlebar.yPos;
+								const titleBarHeightY = titleBarY + pDiob.dragOptions.titlebar.height;
+								if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY) {
+									this._dragging.element = pDiob;
+									this._dragging.xOff = realX - titleBarX + pDiob.dragOptions.titlebar.xPos;
+									this._dragging.yOff = realY - titleBarY + pDiob.dragOptions.titlebar.yPos;
+								}
+								return;
 							}
-							return;
 						}
 
 						this._dragging.element = pDiob;
