@@ -639,10 +639,10 @@
 		VS.Type.setFunction('Diob', 'super', superFunction);
 		
 		// store the original onConnect function if there is one
-		aInterfaceUtils._onConnect = VS.Type.getFunction('Client', 'onConnect');
+		aInterfaceUtils._onNewClient = VS.Type.getFunction('Client', 'onNew');
 
 		// the function that will be used as the `pClient.onConnect` function
-		const onConnect = function() {
+		const onNewClient = function() {
 			this._screenScale = { 'x': 1, 'y': 1 };
 			this._windowSize = this.getWindowSize();
 			this._gameSize = VS.World.getGameSize();
@@ -650,13 +650,13 @@
 			this._dragging = { 'element': null, 'xOff': 0, 'yOff': 0 };
 			this._mousedDowned = null;
 			this.dragging = false;
-			if (VS.World.global.aInterfaceUtils._onConnect) {
-				VS.World.global.aInterfaceUtils._onConnect.apply(this);
+			if (VS.World.global.aInterfaceUtils._onNewClient) {
+				VS.World.global.aInterfaceUtils._onNewClient.apply(this);
 			}
 		}
 
 		// assign the custom onConnect function to the client
-		VS.Type.setFunction('Client', 'onConnect', onConnect);
+		VS.Type.setFunction('Client', 'onNew', onNewClient);
 
 		// store the original onWindowFocus function if there is one
 		aInterfaceUtils._onWindowFocus = VS.Type.getFunction('Client', 'onWindowFocus');
@@ -1011,10 +1011,10 @@
 		}
 
 		// store the original onNew function if there is one
-		aInterfaceUtils._onNew = VS.Type.getFunction('Interface', 'onNew');
+		aInterfaceUtils._onNewInterface = VS.Type.getFunction('Interface', 'onNew');
 		
 		// the function that will be used as the `Interface.onNew` function
-		const onNew = function() {
+		const onNewInterface = function() {
 			const interfaceName = this.getInterfaceName();
 			if (!interfaceName) return;
 			this.defaultPos = { 'x': this.xPos, 'y': this.yPos };
@@ -1125,43 +1125,43 @@
 				}
 			}
 
-			if (VS.Client.aInterfaceUtils._onNew) {
-				VS.Client.aInterfaceUtils._onNew.apply(this, arguments);
+			if (VS.Client.aInterfaceUtils._onNewInterface) {
+				VS.Client.aInterfaceUtils._onNewInterface.apply(this, arguments);
 			}
 		}
 
 		// assign the custom onNew function to the Interface type
-		VS.Type.setFunction('Interface', 'onNew', onNew);
+		VS.Type.setFunction('Interface', 'onNew', onNewInterface);
 
 		// store the original onShow function if there is one
-		aInterfaceUtils._onShow = VS.Type.getFunction('Interface', 'onShow');
+		aInterfaceUtils._onShowInterface = VS.Type.getFunction('Interface', 'onShow');
 		
 		// the function that will be used as the `Interface.onShow` function
-		const onShow = function(pClient) {
+		const onShowInterface = function(pClient) {
 			this.shown = true;
-			if (VS.Client.aInterfaceUtils._onShow) {
-				VS.Client.aInterfaceUtils._onShow.apply(this, arguments);
+			if (VS.Client.aInterfaceUtils._onShowInterface) {
+				VS.Client.aInterfaceUtils._onShowInterface.apply(this, arguments);
 			}
 		}
 
 		// assign the custom onShow function to the Interface type
-		VS.Type.setFunction('Interface', 'onShow', onShow);
+		VS.Type.setFunction('Interface', 'onShow', onShowInterface);
 
 		// store the original onHide function if there is one
-		aInterfaceUtils._onHide = VS.Type.getFunction('Interface', 'onHide');
+		aInterfaceUtils._onHideInterface = VS.Type.getFunction('Interface', 'onHide');
 		
 		// the function that will be used as the `Interface.onHide` function
-		const onHide = function(pClient) {
+		const onHideInterface = function(pClient) {
 			this.shown = false;
-			if (VS.Client.aInterfaceUtils._onHide) {
-				VS.Client.aInterfaceUtils._onHide.apply(this, arguments);
+			if (VS.Client.aInterfaceUtils._onHideInterface) {
+				VS.Client.aInterfaceUtils._onHideInterface.apply(this, arguments);
 			}
 		}
 		
 		// assign the custom onHide function to the Interface type
-		VS.Type.setFunction('Interface', 'onHide', onHide);
+		VS.Type.setFunction('Interface', 'onHide', onHideInterface);
 
-		const reposition = function(pX, pY, pDefaultX, pDefaultY) {
+		const repositionInterface = function(pX, pY, pDefaultX, pDefaultY) {
 			const size = {
 				'width': (this.preventAutoScale ? VS.Client._windowSize.width : VS.Client._gameSize.width),
 				'height': (this.preventAutoScale ? VS.Client._windowSize.height : VS.Client._gameSize.height)
@@ -1193,7 +1193,7 @@
 		}
 
 		// give this reposition function to the interface type
-		VS.Type.setFunction('Interface', 'reposition', reposition);
+		VS.Type.setFunction('Interface', 'reposition', repositionInterface);
 
 		const leave = () => {
 			if (VS.Client) {
