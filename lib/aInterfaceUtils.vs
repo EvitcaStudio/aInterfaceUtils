@@ -820,13 +820,19 @@
 				}
 
 				if (this.dragging) {
-					if (this._dragging.element.dragOptions?.titlebar?.xPos >= 0 && this._dragging.element.dragOptions?.titlebar?.yPos >= 0 && this._dragging.element.dragOptions?.titlebar?.width > 0 && this._dragging.element.dragOptions?.titlebar?.height > 0) {
-						const titleBarX = this._dragging.element.xPos + this._dragging.element.dragOptions.titlebar.xPos;
-						const titleBarWidthX = titleBarX + this._dragging.element.dragOptions.titlebar.width;
-						const titleBarY = this._dragging.element.yPos + this._dragging.element.dragOptions.titlebar.yPos;
-						const titleBarHeightY = titleBarY + this._dragging.element.dragOptions.titlebar.height;
-						maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
-						maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
+					if (this._dragging.element.dragOptions.titlebar) {
+						if (this._dragging.element.dragOptions.titlebar.xPos >= 0 && this._dragging.element.dragOptions.titlebar.yPos >= 0 && this._dragging.element.dragOptions.titlebar.width > 0 && this._dragging.element.dragOptions.titlebar.height > 0) {
+/* 							const titleBarX = this._dragging.element.xPos + this._dragging.element.dragOptions.titlebar.xPos;
+							const titleBarWidthX = titleBarX + this._dragging.element.dragOptions.titlebar.width;
+							const titleBarY = this._dragging.element.yPos + this._dragging.element.dragOptions.titlebar.yPos;
+							const titleBarHeightY = titleBarY + this._dragging.element.dragOptions.titlebar.height; 
+*/
+							maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
+							maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
+						} else {
+							maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
+							maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
+						}
 					} else {
 						maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
 						maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
