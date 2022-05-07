@@ -20,6 +20,13 @@
 
 	const buildDialog = (aInterfaceUtils) => {
 		const MAX_PLANE = 1999998;
+		VS.Client._screenScale = { 'x': 1, 'y': 1 };
+		VS.Client._windowSize = VS.Client.getWindowSize();
+		VS.Client._gameSize = VS.World.getGameSize();
+		VS.Client.getScreenScale(VS.Client._screenScale);
+		VS.Client._dragging = { 'element': null, 'xOff': 0, 'yOff': 0 };
+		VS.Client._mousedDowned = null;
+		VS.Client.dragging = false;
 		VS.Client.aInterfaceUtils = aInterfaceUtils;
 		// attach onMouseClick event to client
 		if (!aInterfaceUtils.onMouseClickSet) {
@@ -637,26 +644,6 @@
 		}
 
 		VS.Type.setFunction('Diob', 'super', superFunction);
-		
-		// store the original onConnect function if there is one
-		aInterfaceUtils._onNewClient = VS.Type.getFunction('Client', 'onNew');
-
-		// the function that will be used as the `pClient.onConnect` function
-		const onNewClient = function() {
-			this._screenScale = { 'x': 1, 'y': 1 };
-			this._windowSize = this.getWindowSize();
-			this._gameSize = VS.World.getGameSize();
-			this.getScreenScale(this._screenScale);
-			this._dragging = { 'element': null, 'xOff': 0, 'yOff': 0 };
-			this._mousedDowned = null;
-			this.dragging = false;
-			if (VS.World.global.aInterfaceUtils._onNewClient) {
-				VS.World.global.aInterfaceUtils._onNewClient.apply(this);
-			}
-		}
-
-		// assign the custom onConnect function to the client
-		VS.Type.setFunction('Client', 'onNew', onNewClient);
 
 		// store the original onWindowFocus function if there is one
 		aInterfaceUtils._onWindowFocus = VS.Type.getFunction('Client', 'onWindowFocus');
