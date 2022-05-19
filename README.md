@@ -3,7 +3,7 @@
 `CLIENT-SIDE ONLY`  
 
 A small powerful plugin  that will allow you to really get control over your VyScript interfaces.
-Download everything inside the `lib` folder and import it into your project.
+Download everything inside the `plugin` folder and import it into your project.
 
  > **API**   
 ### .dragOptions
