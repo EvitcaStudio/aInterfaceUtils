@@ -1,20 +1,13 @@
 (() => {
-	const aInterfaceUtils = {};
-	let libraryBuilt = false;
 	const engineWaitId = setInterval(() => {
-		if (VS.World.global && !libraryBuilt) {
-			// Since the client is not available inside of this function, we assign data to the type `Client` and when it is created, it uses that data.
-			buildInterfaceUtils(aInterfaceUtils);
-			libraryBuilt = true;
-		}
-
-		if (VS.Client && libraryBuilt) {
+		if (VS.global && VS.global.aListener && VS.Client) {
 			clearInterval(engineWaitId);
-			buildDialog(aInterfaceUtils);
+			buildInterfaceUtils();
 		}
 	});
 
-	const buildDialog = (aInterfaceUtils) => {
+	const buildInterfaceUtils = () => {
+		const aInterfaceUtils = {};
 		const MAX_PLANE = 1999998;
 		VS.Client._screenScale = { 'x': 1, 'y': 1 };
 		VS.Client._windowSize = VS.Client.getWindowSize();
@@ -23,80 +16,10 @@
 		VS.Client._dragging = { 'element': null, 'xOff': 0, 'yOff': 0 };
 		VS.Client._mousedDowned = null;
 		VS.Client.dragging = false;
+		VS.Client.___EVITCA_aInterfaceUtils = true;
 		VS.Client.aInterfaceUtils = aInterfaceUtils;
-		// attach onMouseClick event to client
-		if (!aInterfaceUtils.onMouseClickSet) {
-			aInterfaceUtils._onMouseClick = VS.Client.onMouseClick;
-			aInterfaceUtils.onMouseClickSet = true;
-			VS.Client.onMouseClick = function(pDiob, pX, pY, pButton) {
-				if (this.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu').shown) {
-					if (pButton === 1) {
-						if (!pDiob || pDiob.baseType !== 'Interface') {
-							this.aInterfaceUtils.inInput = false;
-							/* this.setMacroAtlas(this.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu').storedMacroAtlas); */
-							this.setFocus();
-						}
-					}
-				}
-				if (this.aInterfaceUtils._onMouseClick) {
-					this.aInterfaceUtils._onMouseClick.apply(this, arguments);
-				}
-			}
-		}
+		VS.global.aInterfaceUtils = aInterfaceUtils;
 
-		// toggle the debug mode, which allows descriptive text to be shown when things of notice happen
-		aInterfaceUtils.toggleDebug = function() {
-			this.debugging = (this.debugging ? false : true);
-		}
-/* 		
-		VS.Macro.newMacroAtlas('aInterfaceUtils_alert_macro');
-		VS.Macro.newMacroAtlas('aInterfaceUtils_input_macro');
-		VS.Macro.newMacroAtlas('aInterfaceUtils_confirm_macro');
-
-		// alert
-		VS.Client.addCommand('closeAlertMenu', function() {
-			this.aInterfaceUtils.closeAlertMenu();
-		});
-		VS.Client.addCommand('leftArrowSelectAlert', function() {
-
-		});
-		VS.Client.addCommand('rightArrowSelectAlert', rightArrowSelectAlert = function() {
-			
-		});
-		// input
-		VS.Client.addCommand('closeInputMenu', function() {
-			this.aInterfaceUtils.closeInputMenu();
-		});
-		VS.Client.addCommand('leftArrowSelectInput', function() {
-
-		});
-		VS.Client.addCommand('rightArrowSelectInput', function() {
-			
-		});
-		// confirm
-		VS.Client.addCommand('closeConfirmMenu', function() {
-			this.aInterfaceUtils.closeConfirmMenu();
-		});
-		VS.Client.addCommand('leftArrowSelectConfirm', function() {
-
-		});
-		VS.Client.addCommand('rightArrowSelectConfirm', function() {
-			
-		});
-
-		// alert
-		VS.Macro.newMacro('closeAlertMenu', 'aInterfaceUtils_alert_macro', 'Enter', 'closeAlertMenu');
-		VS.Macro.newMacro('leftArrowSelectAlert', 'aInterfaceUtils_alert_macro', 'ArrowLeft', 'leftArrowSelectAlert');
-		VS.Macro.newMacro('rightArrowSelectAlert', 'aInterfaceUtils_alert_macro', 'ArrowRight', 'rightArrowSelectAlert');
-		// input
-		VS.Macro.newMacro('closeInputMenu', 'aInterfaceUtils_input_macro', 'Enter', 'closeInputMenu');
-		VS.Macro.newMacro('leftArrowSelectInput', 'aInterfaceUtils_input_macro', 'ArrowLeft', 'leftArrowSelectInput');
-		VS.Macro.newMacro('rightArrowSelectInput', 'aInterfaceUtils_input_macro', 'ArrowRight', 'rightArrowSelectInput');
-		// confirm
-		VS.Macro.newMacro('closeConfirmMenu', 'aInterfaceUtils_confirm_macro', 'Enter', 'closeConfirmMenu');
-		VS.Macro.newMacro('leftArrowSelectConfirm', 'aInterfaceUtils_confirm_macro', 'ArrowLeft', 'leftArrowSelectConfirm');
-		VS.Macro.newMacro('rightArrowSelectConfirm', 'aInterfaceUtils_confirm_macro', 'ArrowRight', 'rightArrowSelectConfirm');
- */
 		VS.Client.createInterface('aInterfaceUtils_alert_interface');
 		VS.Client.createInterface('aInterfaceUtils_input_interface');
 		VS.Client.createInterface('aInterfaceUtils_confirm_interface');
@@ -145,592 +68,119 @@
 			}
 		`);
 
-		// alert menu
-		const alertMenu = VS.newDiob('Interface');
-		alertMenu.atlasName = 'aInterfaceUtils_atlas';
-		alertMenu.iconName = 'dialog_menu';
-		alertMenu.width = 380;
-		alertMenu.height = 185;
-		alertMenu.layer = MAX_PLANE;
-		alertMenu.plane = MAX_PLANE;
-		alertMenu.alpha = 0.8;
-		alertMenu.interfaceType = 'WebBox';
-		alertMenu.itemsInQueue = 0;
-		alertMenu.queuedAlerts = {};
-		alertMenu.queueTracker = 0;
-		alertMenu.name = 'alert_menu';
-		alertMenu.dragOptions = { 'draggable': true, 'parent': true, 'titlebar': { 'width': 380, 'height': 34, 'xPos': 1, 'yPos': 0 }};
-		alertMenu.textStyle = { 'vPadding': 7 };
+		VS.Type.setVariables('Interface', { 'scale': { 'x': 1, 'y': 1 }, 'anchor': { 'x': 0.5, 'y': 0.5 }, '_protruding': { 'east': false, 'west': false, 'north': false, 'south': false }, 'dragOptions': { 'draggable': false, 'beingDragged': false, 'parent': false, 'clampedPos': { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } } });
 
-		alertMenu.onFocus = function(pClient) {
-			pClient.toggleMacroCapture(false);
-		}
-		alertMenu.onUnfocus = function(pClient) {
-			pClient.toggleMacroCapture(true);
-		}
-		alertMenu.onShow = function(pClient) {
-			for (const elem of pClient.getInterfaceElements('aInterfaceUtils_alert_interface')) {
-				elem.setPos(elem.defaultPos.x, elem.defaultPos.y);
-			}
-			pClient.setFocus(this)
-			this.super('onShow', arguments);
-		}
-		alertMenu.onHide = function(pClient) {
-			pClient.setFocus();
-			this.super('onHide', arguments);
-		}
-
-		// alert ok button
-		const alertMenuOkButton = VS.newDiob('Interface');
-		alertMenuOkButton.atlasName = 'aInterfaceUtils_atlas';
-		alertMenuOkButton.iconName = 'dialog_button';
-		alertMenuOkButton.interfaceType = 'WebBox';
-		alertMenuOkButton.width = 85;
-		alertMenuOkButton.height = 27;
-		alertMenuOkButton.layer = MAX_PLANE;
-		alertMenuOkButton.plane = MAX_PLANE;
-		alertMenuOkButton.interfaceType = 'WebBox';
-		alertMenuOkButton.textStyle = { 'vPadding': 7 };
-		alertMenuOkButton.parentElement = 'alert_menu';
-		alertMenuOkButton.text = '<div class="aInterfaceUtils_dialog_button">Ok</div>';
-
-		alertMenuOkButton.onMouseEnter = function(pClient, pX, pY) {
-			pClient.setMouseCursor('pointer');
-			this.alpha = 0.8;
-		}
-
-		alertMenuOkButton.onMouseExit = function(pClient, pX, pY) {
-			pClient.setMouseCursor('');
-			this.alpha = 1;
-		}
-
-		alertMenuOkButton.onMouseClick = function(pClient, pX, pY, pButton) {
-			if (pButton === 1 && this.isMousedDown()) {
-				const alertMenuElem = pClient.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
-				if (alertMenuElem.callback) {
-					if (alertMenuElem.parameters) {
-						alertMenuElem.callback(...alertMenuElem.parameters);
-					} else {
-						alertMenuElem.callback();
-					}
-				}
-				aInterfaceUtils.closeAlertMenu();
-			}
-		}
-
-		VS.Client.addInterfaceElement(alertMenu, 'aInterfaceUtils_alert_interface', 'alert_menu', 287, 178);
-		VS.Client.addInterfaceElement(alertMenuOkButton, 'aInterfaceUtils_alert_interface', 'alert_menu_ok_button', 438, 312);
-		VS.Client.onInterfaceLoaded('aInterfaceUtils_alert_interface');
-
-		// input menu
-		const inputMenu = VS.newDiob('Interface');
-		inputMenu.atlasName = 'aInterfaceUtils_atlas';
-		inputMenu.iconName = 'dialog_menu';
-		inputMenu.width = 380;
-		inputMenu.height = 185;
-		inputMenu.layer = MAX_PLANE;
-		inputMenu.plane = MAX_PLANE;
-		inputMenu.alpha = 0.8;
-		inputMenu.interfaceType = 'WebBox';
-		inputMenu.inputValue = false;
-		inputMenu.closing = false;
-		/* inputMenu.storedMacroAtlas = ''; */
-		inputMenu.itemsInQueue = 0;
-		inputMenu.queuedInputs = {};
-		inputMenu.queueTracker = 0;
-		inputMenu.name = 'input_menu';
-		inputMenu.dragOptions = { 'draggable': true, 'parent': true, 'titlebar': { 'width': 380, 'height': 34, 'xPos': 1, 'yPos': 0 }};
-		inputMenu.textStyle = {
-			'fontFamily': 'Arial',
-			'fontSize': 14,
-			'vPadding': 36,
-			'padding': 13,
-			'fill': '#ffffff'
-		}
-
-		inputMenu.onFocus = function(pClient) {
-			/* this.storedMacroAtlas = pClient._vy_macroAtlas; */
-			pClient.toggleMacroCapture(false);
-			pClient.aInterfaceUtils.inInput = true;
-			/* pClient.setMacroAtlas('aInterfaceUtils_input_macro'); */
-		}
-
-		inputMenu.onUnfocus = function(pClient) {
-			pClient.toggleMacroCapture(true);
-			pClient.aInterfaceUtils.inInput = false;
-		}
-
-		inputMenu.onShow = function(pClient) {
-			for (const elem of pClient.getInterfaceElements('aInterfaceUtils_input_interface')) {
-				elem.setPos(elem.defaultPos.x, elem.defaultPos.y);
-			}
-			pClient.setFocus(this);
-			this.super('onShow', arguments);
-		}
-
-		inputMenu.onHide = function(pClient) {
-			pClient.setFocus();
-			this.super('onHide', arguments);
-		}
-
-		// input
-		const inputMenuInput = VS.newDiob('Interface');
-		inputMenuInput.atlasName = 'aInterfaceUtils_atlas';
-		inputMenuInput.iconName = 'dialog_input';
-		inputMenuInput.width = 352;
-		inputMenuInput.height = 25;
-		inputMenuInput.layer = MAX_PLANE;
-		inputMenuInput.plane = MAX_PLANE;
-		inputMenuInput.interfaceType = 'CommandInput';
-		inputMenuInput.parentElement = 'input_menu';
-		inputMenuInput.textStyle = { 'hPadding': 4, 'fill': '#fff' };
-		inputMenuInput.onExecute = function(pClient) {
-			const inputMenuOkButton = pClient.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_ok_button')
-			inputMenuOkButton.close(pClient)
-		}
-
-		// input ok button
-		const inputMenuOkButton = VS.newDiob('Interface');
-		inputMenuOkButton.atlasName = 'aInterfaceUtils_atlas';
-		inputMenuOkButton.iconName = 'dialog_button';
-		inputMenuOkButton.width = 85;
-		inputMenuOkButton.height = 27;
-		inputMenuOkButton.layer = MAX_PLANE;
-		inputMenuOkButton.plane = MAX_PLANE;
-		inputMenuOkButton.interfaceType = 'WebBox';
-		inputMenuOkButton.parentElement = 'input_menu';
-		inputMenuOkButton.textStyle = { 'vPadding': 7 };
-		inputMenuOkButton.text = '<div class="aInterfaceUtils_dialog_button">Ok</div>';
-		inputMenuOkButton.close = function(pClient) {
-			const inputMenu = pClient.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
-			aInterfaceUtils.closeInputMenu();
-			if (inputMenu.closing) {
-				if (inputMenu.callback && typeof(inputMenu.callback) === 'function') {
-					if (inputMenu.parameters) {
-						inputMenu.callback(inputMenu.inputValue, ...inputMenu.parameters);
-					} else {
-						inputMenu.callback(inputMenu.inputValue);
-					}
-				}
-			}
-		}
-		inputMenuOkButton.onMouseEnter = function(pClient, pX, pY) {
-			pClient.setMouseCursor('pointer');
-			this.alpha = 0.8;
-		}
-
-		inputMenuOkButton.onMouseExit = function(pClient, pX, pY) {
-			pClient.setMouseCursor('');
-			this.alpha = 1;
-		}
-
-		inputMenuOkButton.onMouseClick = function(pClient, pX, pY, pButton) {
-			if (pButton === 1 && this.isMousedDown()) {
-				this.close(pClient)
-			}
-		}
-		VS.Client.addInterfaceElement(inputMenu, 'aInterfaceUtils_input_interface', 'input_menu', 287, 178);
-		VS.Client.addInterfaceElement(inputMenuInput, 'aInterfaceUtils_input_interface', 'input_menu_input', 304, 258);
-		VS.Client.addInterfaceElement(inputMenuOkButton, 'aInterfaceUtils_input_interface', 'input_menu_ok_button', 438, 312);
-		VS.Client.onInterfaceLoaded('aInterfaceUtils_input_interface');
-
-		aInterfaceUtils.useNumbersOnly = function() {
-			this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');
-		}
-
-		// confirm menu
-		const confirmMenu = VS.newDiob('Interface');
-		confirmMenu.atlasName = 'aInterfaceUtils_atlas';
-		confirmMenu.iconName = 'dialog_menu';
-		confirmMenu.width = 380;
-		confirmMenu.height = 185;
-		confirmMenu.layer = MAX_PLANE;
-		confirmMenu.plane = MAX_PLANE;
-		confirmMenu.alpha = 0.8;
-		confirmMenu.interfaceType = 'WebBox';
-		confirmMenu.itemsInQueue = 0;
-		confirmMenu.queuedDialogs = {};
-		confirmMenu.queueTracker = 0;
-		confirmMenu.textStyle = {
-			'fontFamily': 'Arial',
-			'fontSize': 14,
-			'vPadding': 7,
-			'fill': '#ffffff',
-		};
-		confirmMenu.name = 'confirm_menu';
-		confirmMenu.dragOptions = { 'draggable': true, 'parent': true, 'titlebar': { 'width': 380, 'height': 34, 'xPos': 1, 'yPos': 0 }};
-		confirmMenu.onFocus = function(pClient) {
-			pClient.toggleMacroCapture(false);
-		}
-		confirmMenu.onUnfocus = function(pClient) {
-			pClient.toggleMacroCapture(true);
-		}
-		confirmMenu.onShow = function(pClient) {
-			for (const elem of pClient.getInterfaceElements('aInterfaceUtils_confirm_interface')) {
-				elem.setPos(elem.defaultPos.x, elem.defaultPos.y);
-			}
-			pClient.setFocus(this);
-			this.super('onShow', arguments);
-		}
-		confirmMenu.onHide = function(pClient) {
-			pClient.setFocus();
-			this.super('onHide', arguments);
-		}
-		// confirm yes button
-		const confirmMenuYesButton = VS.newDiob('Interface');
-		confirmMenuYesButton.atlasName = 'aInterfaceUtils_atlas';
-		confirmMenuYesButton.iconName = 'dialog_button';
-		confirmMenuYesButton.width = 85;
-		confirmMenuYesButton.height = 27;
-		confirmMenuYesButton.layer = MAX_PLANE;
-		confirmMenuYesButton.plane = MAX_PLANE;
-		confirmMenuYesButton.interfaceType = 'WebBox';
-		confirmMenuYesButton.parentElement = 'confirm_menu';
-		confirmMenuYesButton.textStyle = { 
-			'fontSize': 11, 
-			'fill': '#fff', 
-			'vPadding': 7 
-		};
-		confirmMenuYesButton.text = '<div class="aInterfaceUtils_dialog_button">Yes</div>';
-		confirmMenuYesButton.onMouseEnter = function(pClient, pX, pY) {
-			pClient.setMouseCursor('pointer');
-			this.alpha = 0.8;
-		}
-
-		confirmMenuYesButton.onMouseExit = function(pClient, pX, pY) {
-			pClient.setMouseCursor('');
-			this.alpha = 1;
-		}
-
-		confirmMenuYesButton.onMouseClick = function(pClient, pX, pY, pButton) {
-			if (pButton === 1 && this.isMousedDown()) {
-				const confirmMenu = pClient.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
-				if (confirmMenu.callback && typeof(confirmMenu.callback) === 'function') {
-					if (confirmMenu.parameters) {
-						confirmMenu.callback(true, ...confirmMenu.parameters);
-					} else {
-						confirmMenu.callback(true);
-					}
-				}
-				aInterfaceUtils.closeConfirmMenu();
-			}
-		}
-		// confirm no button
-		const confirmMenuNoButton = VS.newDiob('Interface');
-		confirmMenuNoButton.atlasName = 'aInterfaceUtils_atlas';
-		confirmMenuNoButton.iconName = 'dialog_button';
-		confirmMenuNoButton.width = 85;
-		confirmMenuNoButton.height = 27;
-		confirmMenuNoButton.layer = MAX_PLANE;
-		confirmMenuNoButton.plane = MAX_PLANE;
-		confirmMenuNoButton.interfaceType = 'WebBox';
-		confirmMenuNoButton.parentElement = 'confirm_menu';
-		confirmMenuNoButton.textStyle = { 
-			'fontSize': 11, 
-			'fill': '#fff', 
-			'vPadding': 7 
-		};
-		confirmMenuNoButton.text = '<div class="aInterfaceUtils_dialog_button">No</div>';
-		confirmMenuNoButton.onMouseEnter = function(pClient, pX, pY) {
-			pClient.setMouseCursor('pointer');
-			this.alpha = 0.8;
-		}
-
-		confirmMenuNoButton.onMouseExit = function(pClient, pX, pY) {
-			pClient.setMouseCursor('');
-			this.alpha = 1;
-		}
-
-		confirmMenuNoButton.onMouseClick = function(pClient, pX, pY, pButton) {
-			if (pButton === 1 && this.isMousedDown()) {
-				const confirmMenu = pClient.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
-				if (confirmMenu.callback && typeof(confirmMenu.callback) === 'function') {
-					if (confirmMenu.parameters) {
-						confirmMenu.callback(false, ...confirmMenu.parameters);
-					} else {
-						confirmMenu.callback(false);
-					}
-				}
-				aInterfaceUtils.closeConfirmMenu();
-			}
-		}
-		VS.Client.addInterfaceElement(confirmMenu, 'aInterfaceUtils_confirm_interface', 'confirm_menu', 287, 178);
-		VS.Client.addInterfaceElement(confirmMenuYesButton, 'aInterfaceUtils_confirm_interface', 'confirm_menu_yes_button', 396, 315);
-		VS.Client.addInterfaceElement(confirmMenuNoButton, 'aInterfaceUtils_confirm_interface', 'confirm_menu_no_button', 486, 315);
-		VS.Client.onInterfaceLoaded('aInterfaceUtils_confirm_interface');
-
-		aInterfaceUtils.alert = function(pTitle, pMessage, pCallback, pParameters) {
-			const alertMenu = VS.Client.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
-			let num;
-			let message;
-			let title;
-			let callback;
-			let parameters;
-
-			if (alertMenu.shown) {
-				alertMenu.itemsInQueue++;
-				num = alertMenu.itemsInQueue;
-				message = 'message' + num;
-				title = 'title' + num;
-				callback = 'callback' + num;
-				parameters = 'parameters' + num;
-				alertMenu.queuedAlerts[message] = pMessage;
-				alertMenu.queuedAlerts[title] = pTitle;
-				alertMenu.queuedAlerts[callback] = pCallback;
-				alertMenu.queuedAlerts[parameters] = pParameters;
-				return;
-			}
-
-			alertMenu.callback = pCallback;
-			alertMenu.parameters = pParameters;
-			for (const elem of VS.Client.getInterfaceElements('aInterfaceUtils_alert_interface')) {
-				elem.show();
-				if (elem.name === 'alert_menu') {
-					elem.text = '<div class="aInterfaceUtils_center_title">' + pTitle + '</div><div class="aInterfaceUtils_dialog">' + pMessage + '</div>';
-				}
-			}
-			this.inDialog = true;
-		}
-
-		aInterfaceUtils.closeAlertMenu = function() {
-			const alertMenu = VS.Client.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
-			let count;
-			
-			VS.Client.hideInterface('aInterfaceUtils_alert_interface');
-
-			if (alertMenu.itemsInQueue) {
-				alertMenu.queueTracker++;
-				count = alertMenu.queueTracker;
-				setTimeout(function() {
-					VS.global.aInterfaceUtils.alert(alertMenu.queuedAlerts['message' + count], alertMenu.queuedAlerts['title' + count], alertMenu.queuedAlerts['callback' + count], alertMenu.queuedAlerts['parameters' + count]);
-				}, 500);
-				alertMenu.itemsInQueue--;
-			} else {
-				alertMenu.itemsInQueue = 0;
-				alertMenu.queueTracker = 0;
-				alertMenu.queuedAlerts = {};
-			}
-			alertMenu.text = '';
-			this.inDialog = false;
-		}
-
-		aInterfaceUtils.input = function(pText, pDefaultText, pNumbersOnly=false, pCallback, pParameters) {
-			const inputMenu = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
-			const inputText = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_input');
-			let num;
-			let text;
-			let defaultText;
-			let numbersOnly;
-			let callback;
-			let parameters;
-			/* inputMenu.storedMacroAtlas = VS.Client._vy_macroAtlas; */
-
-			if (inputMenu.shown) {
-				inputMenu.itemsInQueue++
-				num = inputMenu.itemsInQueue;
-				text = 'text' + num;
-				defaultText = 'defaultText' + num;
-				numbersOnly = 'numbersOnly' + num;
-				callback = 'callback' + num;
-				parameters = 'parameters' + num;
-				inputMenu.queuedInputs[text] = pText;
-				inputMenu.queuedInputs[defaultText] = pDefaultText;
-				inputMenu.queuedInputs[numbersOnly] = pNumbersOnly;
-				inputMenu.queuedInputs[callback] = pCallback;
-				inputMenu.queuedInputs[parameters] = pParameters;
-				return;
-			}
-				
-			inputMenu.closing = false;
-			inputMenu.defaultText = pDefaultText;
-			inputMenu.numbersOnly = pNumbersOnly;
-			inputMenu.callback = pCallback;
-			inputMenu.parameters = pParameters;
-			// needs to be shown to create dom element
-			inputText.show();
-			if (inputText.getDOM().children[0]) {
-				inputText.getDOM().children[0].placeholder = pDefaultText;
-			}
-
-			if (pNumbersOnly) {
-				document.getElementById('ti_aInterfaceUtils_input_interface_input_menu_input').addEventListener('input', this.useNumbersOnly);
-			}
-			
-			for (const elem of VS.Client.getInterfaceElements('aInterfaceUtils_input_interface')) {
-				elem.show();
-				if (elem.name === 'input_menu') {
-					elem.text = '<div class="aInterfaceUtils_input">' + pText + '</div>', 'input_interface';
-				}
-			}
-			this.inInput = true;
-		}
-
-		aInterfaceUtils.closeInputMenu = function() {
-			const inputMenu = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
-			const inputText = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_input');
-			const inputOk = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_ok_button');
-			let count;
-
-			inputMenu.inputValue = inputText.text;
-			if (!inputMenu.inputValue) {
-				// shake error animation here
-				return;
-			}
-
-			if (inputMenu.numbersOnly) {
-				document.getElementById('ti_aInterfaceUtils_input_interface_input_menu_input').removeEventListener('input', this.useNumbersOnly);
-			}
-
-			VS.Client.hideInterface('aInterfaceUtils_input_interface');
-
-			inputMenu.closing = true;
-			
-			if (inputMenu.itemsInQueue) {
-				inputMenu.queueTracker++;
-				count = inputMenu.queueTracker;
-				setTimeout(function() {
-					VS.global.aInterfaceUtils.input(inputMenu.queuedInputs['text' + count], inputMenu.queuedInputs['defaultText' + count], inputMenu.queuedInputs['numbersOnly' + count], inputMenu.queuedInputs['callback' + count], inputMenu.queuedInputs['parameters' + count]);
-				}, 500);
-				inputMenu.itemsInQueue--;
-			} else {
-				inputMenu.itemsInQueue = 0;
-				inputMenu.queueTracker = 0;
-				inputMenu.queuedInputs = {};
-			}
-			inputMenu.text = '';
-			inputText.text = '';
-			this.inInput = false;
-			/* VS.Client.setMacroAtlas(inputMenu.storedMacroAtlas); */
-		}
-
-		aInterfaceUtils.confirm = function(pTitle, pMessage, pCallback, pParameters) {
-			const confirmMenu = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
-			let num;
-			let message;
-			let title;
-			let callback;
-			let parameters;
-			
-			if (confirmMenu.shown) {
-				confirmMenu.itemsInQueue++;
-				num = confirmMenu.itemsInQueue;
-				message = 'message' + num;
-				title = 'title' + num;
-				callback = 'callback' + num;
-				parameters = 'parameters' + num;
-				confirmMenu.queuedDialogs[message] = pMessage;
-				confirmMenu.queuedDialogs[title] = pTitle;
-				confirmMenu.queuedDialogs[callback] = pCallback;
-				confirmMenu.queuedDialogs[parameters] = pParameters;
-				return;
-			}
-
-			confirmMenu.callback = pCallback;
-			confirmMenu.parameters = pParameters;
-			
-			for (const elem of VS.Client.getInterfaceElements('aInterfaceUtils_confirm_interface')) {
-				elem.show();
-				if (elem.name === 'confirm_menu') {
-					elem.text = '<div class="aInterfaceUtils_center_title">' + pTitle + '</div><div class="aInterfaceUtils_dialog">' + pMessage + '</div>';
-				}
-			}
-					
-			this.inDialog = true;
-		}
-
-		aInterfaceUtils.closeConfirmMenu = function() {
-			const confirmMenu = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
-			const acceptButton = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu_yes_button');
-			const closeButton = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu_no_button');
-			let count;		
-			
-			VS.Client.hideInterface('aInterfaceUtils_confirm_interface');
-
-			if (confirmMenu.itemsInQueue) {
-				confirmMenu.queueTracker++;
-				count = confirmMenu.queueTracker;
-				setTimeout(function() {
-					VS.global.aInterfaceUtils.confirm(confirmMenu.queuedDialogs['message' + count], confirmMenu.queuedDialogs['title' + count], confirmMenu.queuedDialogs['callback' + count], confirmMenu.queuedDialogs['parameters' + count]);
-				}, 500);
-				confirmMenu.itemsInQueue--;
-			} else {
-				confirmMenu.itemsInQueue = 0;
-				confirmMenu.queueTracker = 0;
-				confirmMenu.queuedDialogs = {};
-			}
-			confirmMenu.text = '';
-			this.inDialog = false;
-		}
-	}
-
-	const buildInterfaceUtils = (aInterfaceUtils) => {
-		VS.global.aInterfaceUtils = aInterfaceUtils;
-		VS.Type.setVariables('Client', { '___EVITCA_aInterfaceUtils': true });
-
-		const isMousedDown = function() {
-			if (VS.Client._mousedDowned === this && !VS.Client.dragging) {
-				return true;
-			}
-			return false;
-		}
-
-		// give this isMousedDown function to the diob type
-		VS.Type.setFunction('Diob', 'isMousedDown', isMousedDown);
-
-		const superFunction = function(pFunctionName, pArgs) {
-			if (this.parentType || this.baseType) {
-				VS.Type.callFunction((this.parentType ? this.parentType : this.baseType), pFunctionName, this, ...pArgs);
-			}
-		}
-
-		VS.Type.setFunction('Diob', 'super', superFunction);
-
-		// store the original onWindowFocus function if there is one
-		aInterfaceUtils._onWindowFocus = VS.Type.getFunction('Client', 'onWindowFocus');
-
-		// the function that will be used as the `pClient.onWindowFocus` function
-		const onWindowFocus = function() {
-			VS.global.aInterfaceUtils.preventMouseMoveEvent = true;
-			if (VS.global.aInterfaceUtils._onWindowFocus) {
-				VS.global.aInterfaceUtils._onWindowFocus.apply(this);
-			}
-		}
-
-		// assign the custom onWindowFocus function to the client
-		VS.Type.setFunction('Client', 'onWindowFocus', onWindowFocus);
-
-		// store the original onWindowResize function if there is one
-		aInterfaceUtils._onWindowResize = VS.Type.getFunction('Client', 'onWindowResize');
-
-		// the function that will be used as the `pClient.onWindowResize` function
-		const onWindowResize = function(pWidth, pHeight) {
-			if (this._windowSize) {
-				this._windowSize.width = pWidth;
-				this._windowSize.height = pHeight;
-			}
-			this.getScreenScale(this._screenScale);
-			if (this.___EVITCA_aInventory) {
-				this.aInventory.outlineFilter.thickness = this.aInventory.outlineDefaultThickness * mainM.mapScaleWidth;
-			}
-			if (this.aInterfaceUtils._onWindowResize) {
-				this.aInterfaceUtils._onWindowResize.apply(this, arguments);
-			}
-		}
-
-		// assign the custom onWindowResize function to the client
-		VS.Type.setFunction('Client', 'onWindowResize', onWindowResize);
-
-		// store the original onInterfaceLoaded function if there is one
-		aInterfaceUtils._onInterfaceLoaded = VS.Type.getFunction('Client', 'onInterfaceLoaded');
-
-		// the function that will be used as the `pClient.onInterfaceLoaded` function
-		const onInterfaceLoaded = function(pInterface) {
+		VS.Client.buildInterface = function(pInterface) {
 			let protruding;
 			let protrudingDirection;
 
+			const setup = function(pElement) {
+				const interfaceName = pElement.getInterfaceName();
+				pElement.defaultPos = { 'x': pElement.xPos ? pElement.xPos : 0, 'y': pElement.yPos ? pElement.yPos : 0 };
+				pElement.defaultDisplay = { 'layer': pElement.layer, 'plane': pElement.plane };
+				pElement.defaultSize = { 'width': pElement.width, 'height': pElement.height };
+				pElement.defaultScreenPercentage = { 'x': ((100 * pElement.xPos ? pElement.xPos : 0) / VS.World.getGameSize().width), 'y': ((100 * pElement.yPos ? pElement.yPos : 0) / VS.World.getGameSize().height) };
+				if (!interfaceName) return;
+				pElement.interfaceName = interfaceName;
+
+				if (pElement.dragOptions.draggable) {
+					if (pElement.dragOptions.titlebar) {
+						if (!pElement.dragOptions.titlebar.xPos) {
+							pElement.dragOptions.titlebar.xPos = 0;
+						}
+
+						if (!pElement.dragOptions.titlebar.yPos) {
+							pElement.dragOptions.titlebar.yPos = 0;
+						}
+					}
+
+					VS.global.aListener.addEventListener(pElement, 'onMouseEnter', function(pClient, pX, pY) {
+						if (pElement.dragOptions.titlebar) {
+							if (pElement.dragOptions.titlebar.xPos >= 0 && pElement.dragOptions.titlebar.yPos >= 0 && pElement.dragOptions.titlebar.width > 0 && pElement.dragOptions.titlebar.height > 0) {
+								const realX = pElement.xPos + pX;
+								const realY = pElement.yPos + pY;
+								const titleBarX = pElement.xPos + pElement.dragOptions.titlebar.xPos;
+								const titleBarWidthX = titleBarX + pElement.dragOptions.titlebar.width;
+								const titleBarY = pElement.yPos + pElement.dragOptions.titlebar.yPos;
+								const titleBarHeightY = titleBarY + pElement.dragOptions.titlebar.height;
+								if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY) {
+									VS.global.aInterfaceUtils.handleMouseOverDragArea();
+								}
+							}
+						} else if (pElement.dragOptions.draggable) {
+							VS.global.aInterfaceUtils.handleMouseOverDragArea();
+						}
+					});
+
+					VS.global.aListener.addEventListener(pElement, 'onMouseExit', function(pClient, pX, pY) {
+						VS.global.aInterfaceUtils.handleMouseOverDragArea(true);
+					});
+
+					VS.global.aListener.addEventListener(pElement, 'onMouseMove', function(pClient, pX, pY) {
+						if (pElement.dragOptions.titlebar) {
+							if (pElement.dragOptions.titlebar.xPos >= 0 && pElement.dragOptions.titlebar.yPos >= 0 && pElement.dragOptions.titlebar.width > 0 && pElement.dragOptions.titlebar.height > 0) {
+								const realX = pElement.xPos + pX;
+								const realY = pElement.yPos + pY;
+								const titleBarX = pElement.xPos + pElement.dragOptions.titlebar.xPos;
+								const titleBarWidthX = titleBarX + pElement.dragOptions.titlebar.width;
+								const titleBarY = pElement.yPos + pElement.dragOptions.titlebar.yPos;
+								const titleBarHeightY = titleBarY + pElement.dragOptions.titlebar.height;
+								if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY) {
+									VS.global.aInterfaceUtils.handleMouseOverDragArea();
+								} else {
+									VS.global.aInterfaceUtils.handleMouseOverDragArea(true);
+								}
+							}
+						}
+					});
+
+					VS.global.aListener.addEventListener(pElement, 'onShow', function(pClient) {
+						pElement.shown = true;
+					});
+
+					VS.global.aListener.addEventListener(pElement, 'onHide', function(pClient) {
+						pElement.shown = false;
+					});
+
+					pElement.dragOptions.protrudingChildren = { 'x': { 'minPos': 0, 'maxPos': 0, 'minWidth': 0, 'maxWidth': 0 }, 'y': { 'minPos': 0, 'maxPos': 0, 'minHeight': 0, 'maxHeight': 0 }};
+					pElement.dragOptions.clampedPos = { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } };
+				}
+			}
+
+			const getProtudingChildren = function(pElement, pInterface) {
+				for (const element of VS.Client.getInterfaceElements(pInterface)) {
+					if (element.parentElement === pElement.name) {
+						const greaterX = (element.xPos + element.width > pElement.xPos + pElement.width) && (pElement.dragOptions.protrudingChildren.x.maxPos ? element.xPos > pElement.dragOptions.protrudingChildren.x.maxPos : true);
+						const lesserX = (element.xPos < pElement.xPos) && (pElement.dragOptions.protrudingChildren.x.minPos ? element.xPos < pElement.dragOptions.protrudingChildren.x.minPos : true);
+						const greaterY = (element.yPos + element.height > pElement.yPos + pElement.height) && (pElement.dragOptions.protrudingChildren.y.maxPos ? element.yPos > pElement.dragOptions.protrudingChildren.y.maxPos : true);
+						const lesserY = (element.yPos < pElement.yPos) && (pElement.dragOptions.protrudingChildren.y.minPos ? element.yPos < pElement.dragOptions.protrudingChildren.y.minPos : true);
+
+						if (greaterX) {
+							pElement.dragOptions.protrudingChildren.x.maxPos = element.xPos;
+							pElement.dragOptions.protrudingChildren.x.maxWidth = element.width;
+							pElement._protruding.east = true;
+						} else if (lesserX) {
+							pElement.dragOptions.protrudingChildren.x.minPos = element.xPos;
+							pElement.dragOptions.protrudingChildren.x.minWidth = element.width;
+							pElement._protruding.west = true;
+						}
+						if (greaterY) {
+							pElement.dragOptions.protrudingChildren.y.maxPos = element.yPos;
+							pElement.dragOptions.protrudingChildren.y.maxHeight = element.height;
+							pElement._protruding.south = true;
+						} else if (lesserY) {
+							pElement.dragOptions.protrudingChildren.y.minPos = element.yPos;
+							pElement.dragOptions.protrudingChildren.y.minHeight = element.height;
+							pElement._protruding.north = true;
+						}
+					}
+				}
+			}
+
 			for (const element of this.getInterfaceElements(pInterface)) {
+				setup(element);
 				if (element.dragOptions.draggable && element.dragOptions.parent) {
-					element.getProtudingChildren(pInterface)
+					getProtudingChildren(element, pInterface);
 					protruding = element._protruding;
 				}
 			}
@@ -820,19 +270,564 @@
 					}
 				}
 			}
-			if (VS.global.aInterfaceUtils._onInterfaceLoaded) {
-				VS.global.aInterfaceUtils._onInterfaceLoaded.apply(this, arguments);
+		};
+		
+		VS.global.aListener.addEventListener(VS.Client, 'onMouseClick', function(pDiob, pX, pY, pButton) {
+			if (this.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu').shown) {
+				if (pButton === 1) {
+					if (!pDiob || pDiob.baseType !== 'Interface') {
+						this.aInterfaceUtils.inInput = false;
+						this.setFocus();
+					}
+				}
+			}
+		});
+
+		// toggle the debug mode, which allows descriptive text to be shown when things of notice happen
+		aInterfaceUtils.toggleDebug = function() {
+			this.debugging = !this.debugging;
+		}
+
+		// alert menu
+		const alertMenu = VS.newDiob('Interface');
+		alertMenu.atlasName = 'aInterfaceUtils_atlas';
+		alertMenu.iconName = 'dialog_menu';
+		alertMenu.width = 380;
+		alertMenu.height = 185;
+		alertMenu.layer = MAX_PLANE;
+		alertMenu.plane = MAX_PLANE;
+		alertMenu.alpha = 0.8;
+		alertMenu.interfaceType = 'WebBox';
+		alertMenu.itemsInQueue = 0;
+		alertMenu.queuedAlerts = {};
+		alertMenu.queueTracker = 0;
+		alertMenu.name = 'alert_menu';
+		alertMenu.dragOptions = { 'draggable': true, 'parent': true, 'titlebar': { 'width': 380, 'height': 34, 'xPos': 1, 'yPos': 0 }};
+		alertMenu.textStyle = { 'vPadding': 7 };
+
+		alertMenu.onFocus = function(pClient) {
+			pClient.toggleMacroCapture(false);
+		}
+		alertMenu.onUnfocus = function(pClient) {
+			pClient.toggleMacroCapture(true);
+		}
+		alertMenu.onShow = function(pClient) {
+			for (const elem of pClient.getInterfaceElements('aInterfaceUtils_alert_interface')) {
+				elem.setPos(elem.defaultPos.x, elem.defaultPos.y);
+			}
+			pClient.setFocus(this)
+			VS.Type.callFunction((this.parentType ? this.parentType : this.baseType), 'onShow', this, ...arguments);
+		}
+		alertMenu.onHide = function(pClient) {
+			pClient.setFocus();
+			VS.Type.callFunction((this.parentType ? this.parentType : this.baseType), 'onHide', this, ...arguments);
+		}
+
+		// alert ok button
+		const alertMenuOkButton = VS.newDiob('Interface');
+		alertMenuOkButton.atlasName = 'aInterfaceUtils_atlas';
+		alertMenuOkButton.iconName = 'dialog_button';
+		alertMenuOkButton.interfaceType = 'WebBox';
+		alertMenuOkButton.width = 85;
+		alertMenuOkButton.height = 27;
+		alertMenuOkButton.layer = MAX_PLANE;
+		alertMenuOkButton.plane = MAX_PLANE;
+		alertMenuOkButton.interfaceType = 'WebBox';
+		alertMenuOkButton.textStyle = { 'vPadding': 7 };
+		alertMenuOkButton.parentElement = 'alert_menu';
+		alertMenuOkButton.text = '<div class="aInterfaceUtils_dialog_button">Ok</div>';
+
+		alertMenuOkButton.onMouseEnter = function(pClient, pX, pY) {
+			pClient.setMouseCursor('pointer');
+			this.alpha = 0.8;
+		}
+
+		alertMenuOkButton.onMouseExit = function(pClient, pX, pY) {
+			pClient.setMouseCursor('');
+			this.alpha = 1;
+		}
+
+		alertMenuOkButton.onMouseClick = function(pClient, pX, pY, pButton) {
+			if (pButton === 1 && this.isMousedDown()) {
+				const alertMenuElem = pClient.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
+				if (alertMenuElem.callback) {
+					if (alertMenuElem.parameters) {
+						alertMenuElem.callback(...alertMenuElem.parameters);
+					} else {
+						alertMenuElem.callback();
+					}
+				}
+				aInterfaceUtils.closeAlertMenu();
 			}
 		}
 
-		// assign the custom onInterfaceLoaded function to the client
-		VS.Type.setFunction('Client', 'onInterfaceLoaded', onInterfaceLoaded);
+		VS.Client.addInterfaceElement(alertMenu, 'aInterfaceUtils_alert_interface', 'alert_menu', 287, 178);
+		VS.Client.addInterfaceElement(alertMenuOkButton, 'aInterfaceUtils_alert_interface', 'alert_menu_ok_button', 438, 312);
+		VS.Client.buildInterface('aInterfaceUtils_alert_interface');
 
-		// store the original onMouseMove function if there is one
-		aInterfaceUtils._onMouseMove = VS.Type.getFunction('Client', 'onMouseMove');
+		// input menu
+		const inputMenu = VS.newDiob('Interface');
+		inputMenu.atlasName = 'aInterfaceUtils_atlas';
+		inputMenu.iconName = 'dialog_menu';
+		inputMenu.width = 380;
+		inputMenu.height = 185;
+		inputMenu.layer = MAX_PLANE;
+		inputMenu.plane = MAX_PLANE;
+		inputMenu.alpha = 0.8;
+		inputMenu.interfaceType = 'WebBox';
+		inputMenu.inputValue = false;
+		inputMenu.closing = false;
+		inputMenu.itemsInQueue = 0;
+		inputMenu.queuedInputs = {};
+		inputMenu.queueTracker = 0;
+		inputMenu.name = 'input_menu';
+		inputMenu.dragOptions = { 'draggable': true, 'parent': true, 'titlebar': { 'width': 380, 'height': 34, 'xPos': 1, 'yPos': 0 }};
+		inputMenu.textStyle = {
+			'fontFamily': 'Arial',
+			'fontSize': 14,
+			'vPadding': 36,
+			'padding': 13,
+			'fill': '#ffffff'
+		}
 
-		// the function that will be used as the `pClient.onMouseMove` function
-		const onMouseMove = function(pDiob, pX, pY) {
+		inputMenu.onFocus = function(pClient) {
+			pClient.toggleMacroCapture(false);
+			pClient.aInterfaceUtils.inInput = true;
+		}
+
+		inputMenu.onUnfocus = function(pClient) {
+			pClient.toggleMacroCapture(true);
+			pClient.aInterfaceUtils.inInput = false;
+		}
+
+		inputMenu.onShow = function(pClient) {
+			for (const elem of pClient.getInterfaceElements('aInterfaceUtils_input_interface')) {
+				elem.setPos(elem.defaultPos.x, elem.defaultPos.y);
+			}
+			pClient.setFocus(this);
+			VS.Type.callFunction((this.parentType ? this.parentType : this.baseType), 'onShow', this, ...arguments);
+		}
+
+		inputMenu.onHide = function(pClient) {
+			pClient.setFocus();
+			VS.Type.callFunction((this.parentType ? this.parentType : this.baseType), 'onHide', this, ...arguments);
+		}
+
+		// input
+		const inputMenuInput = VS.newDiob('Interface');
+		inputMenuInput.atlasName = 'aInterfaceUtils_atlas';
+		inputMenuInput.iconName = 'dialog_input';
+		inputMenuInput.width = 352;
+		inputMenuInput.height = 25;
+		inputMenuInput.layer = MAX_PLANE;
+		inputMenuInput.plane = MAX_PLANE;
+		inputMenuInput.interfaceType = 'CommandInput';
+		inputMenuInput.parentElement = 'input_menu';
+		inputMenuInput.textStyle = { 'hPadding': 4, 'fill': '#fff' };
+		inputMenuInput.onExecute = function(pClient) {
+			const inputMenuOkButton = pClient.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_ok_button')
+			inputMenuOkButton.close(pClient)
+		}
+
+		// input ok button
+		const inputMenuOkButton = VS.newDiob('Interface');
+		inputMenuOkButton.atlasName = 'aInterfaceUtils_atlas';
+		inputMenuOkButton.iconName = 'dialog_button';
+		inputMenuOkButton.width = 85;
+		inputMenuOkButton.height = 27;
+		inputMenuOkButton.layer = MAX_PLANE;
+		inputMenuOkButton.plane = MAX_PLANE;
+		inputMenuOkButton.interfaceType = 'WebBox';
+		inputMenuOkButton.parentElement = 'input_menu';
+		inputMenuOkButton.textStyle = { 'vPadding': 7 };
+		inputMenuOkButton.text = '<div class="aInterfaceUtils_dialog_button">Ok</div>';
+		inputMenuOkButton.close = function(pClient) {
+			const inputMenu = pClient.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
+			aInterfaceUtils.closeInputMenu();
+			if (inputMenu.closing) {
+				if (inputMenu.callback && typeof(inputMenu.callback) === 'function') {
+					if (inputMenu.parameters) {
+						inputMenu.callback(inputMenu.inputValue, ...inputMenu.parameters);
+					} else {
+						inputMenu.callback(inputMenu.inputValue);
+					}
+				}
+			}
+		}
+		inputMenuOkButton.onMouseEnter = function(pClient, pX, pY) {
+			pClient.setMouseCursor('pointer');
+			this.alpha = 0.8;
+		}
+
+		inputMenuOkButton.onMouseExit = function(pClient, pX, pY) {
+			pClient.setMouseCursor('');
+			this.alpha = 1;
+		}
+
+		inputMenuOkButton.onMouseClick = function(pClient, pX, pY, pButton) {
+			if (pButton === 1 && this.isMousedDown()) {
+				this.close(pClient)
+			}
+		}
+		VS.Client.addInterfaceElement(inputMenu, 'aInterfaceUtils_input_interface', 'input_menu', 287, 178);
+		VS.Client.addInterfaceElement(inputMenuInput, 'aInterfaceUtils_input_interface', 'input_menu_input', 304, 258);
+		VS.Client.addInterfaceElement(inputMenuOkButton, 'aInterfaceUtils_input_interface', 'input_menu_ok_button', 438, 312);
+		VS.Client.buildInterface('aInterfaceUtils_input_interface');
+
+		aInterfaceUtils.useNumbersOnly = function() {
+			this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');
+		}
+
+		// confirm menu
+		const confirmMenu = VS.newDiob('Interface');
+		confirmMenu.atlasName = 'aInterfaceUtils_atlas';
+		confirmMenu.iconName = 'dialog_menu';
+		confirmMenu.width = 380;
+		confirmMenu.height = 185;
+		confirmMenu.layer = MAX_PLANE;
+		confirmMenu.plane = MAX_PLANE;
+		confirmMenu.alpha = 0.8;
+		confirmMenu.interfaceType = 'WebBox';
+		confirmMenu.itemsInQueue = 0;
+		confirmMenu.queuedDialogs = {};
+		confirmMenu.queueTracker = 0;
+		confirmMenu.textStyle = {
+			'fontFamily': 'Arial',
+			'fontSize': 14,
+			'vPadding': 7,
+			'fill': '#ffffff',
+		};
+		confirmMenu.name = 'confirm_menu';
+		confirmMenu.dragOptions = { 'draggable': true, 'parent': true, 'titlebar': { 'width': 380, 'height': 34, 'xPos': 1, 'yPos': 0 }};
+		confirmMenu.onFocus = function(pClient) {
+			pClient.toggleMacroCapture(false);
+		}
+		confirmMenu.onUnfocus = function(pClient) {
+			pClient.toggleMacroCapture(true);
+		}
+		confirmMenu.onShow = function(pClient) {
+			for (const elem of pClient.getInterfaceElements('aInterfaceUtils_confirm_interface')) {
+				elem.setPos(elem.defaultPos.x, elem.defaultPos.y);
+			}
+			pClient.setFocus(this);
+			VS.Type.callFunction((this.parentType ? this.parentType : this.baseType), 'onShow', this, ...arguments);
+		}
+		confirmMenu.onHide = function(pClient) {
+			pClient.setFocus();
+			VS.Type.callFunction((this.parentType ? this.parentType : this.baseType), 'onHide', this, ...arguments);
+		}
+		// confirm yes button
+		const confirmMenuYesButton = VS.newDiob('Interface');
+		confirmMenuYesButton.atlasName = 'aInterfaceUtils_atlas';
+		confirmMenuYesButton.iconName = 'dialog_button';
+		confirmMenuYesButton.width = 85;
+		confirmMenuYesButton.height = 27;
+		confirmMenuYesButton.layer = MAX_PLANE;
+		confirmMenuYesButton.plane = MAX_PLANE;
+		confirmMenuYesButton.interfaceType = 'WebBox';
+		confirmMenuYesButton.parentElement = 'confirm_menu';
+		confirmMenuYesButton.textStyle = { 
+			'fontSize': 11, 
+			'fill': '#fff', 
+			'vPadding': 7 
+		};
+		confirmMenuYesButton.text = '<div class="aInterfaceUtils_dialog_button">Yes</div>';
+		confirmMenuYesButton.onMouseEnter = function(pClient, pX, pY) {
+			pClient.setMouseCursor('pointer');
+			this.alpha = 0.8;
+		}
+
+		confirmMenuYesButton.onMouseExit = function(pClient, pX, pY) {
+			pClient.setMouseCursor('');
+			this.alpha = 1;
+		}
+
+		confirmMenuYesButton.onMouseClick = function(pClient, pX, pY, pButton) {
+			if (pButton === 1 && this.isMousedDown()) {
+				const confirmMenu = pClient.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
+				if (confirmMenu.callback && typeof(confirmMenu.callback) === 'function') {
+					if (confirmMenu.parameters) {
+						confirmMenu.callback(true, ...confirmMenu.parameters);
+					} else {
+						confirmMenu.callback(true);
+					}
+				}
+				aInterfaceUtils.closeConfirmMenu();
+			}
+		}
+		// confirm no button
+		const confirmMenuNoButton = VS.newDiob('Interface');
+		confirmMenuNoButton.atlasName = 'aInterfaceUtils_atlas';
+		confirmMenuNoButton.iconName = 'dialog_button';
+		confirmMenuNoButton.width = 85;
+		confirmMenuNoButton.height = 27;
+		confirmMenuNoButton.layer = MAX_PLANE;
+		confirmMenuNoButton.plane = MAX_PLANE;
+		confirmMenuNoButton.interfaceType = 'WebBox';
+		confirmMenuNoButton.parentElement = 'confirm_menu';
+		confirmMenuNoButton.textStyle = { 
+			'fontSize': 11, 
+			'fill': '#fff', 
+			'vPadding': 7 
+		};
+		confirmMenuNoButton.text = '<div class="aInterfaceUtils_dialog_button">No</div>';
+		confirmMenuNoButton.onMouseEnter = function(pClient, pX, pY) {
+			pClient.setMouseCursor('pointer');
+			this.alpha = 0.8;
+		}
+
+		confirmMenuNoButton.onMouseExit = function(pClient, pX, pY) {
+			pClient.setMouseCursor('');
+			this.alpha = 1;
+		}
+
+		confirmMenuNoButton.onMouseClick = function(pClient, pX, pY, pButton) {
+			if (pButton === 1 && this.isMousedDown()) {
+				const confirmMenu = pClient.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
+				if (confirmMenu.callback && typeof(confirmMenu.callback) === 'function') {
+					if (confirmMenu.parameters) {
+						confirmMenu.callback(false, ...confirmMenu.parameters);
+					} else {
+						confirmMenu.callback(false);
+					}
+				}
+				aInterfaceUtils.closeConfirmMenu();
+			}
+		}
+		VS.Client.addInterfaceElement(confirmMenu, 'aInterfaceUtils_confirm_interface', 'confirm_menu', 287, 178);
+		VS.Client.addInterfaceElement(confirmMenuYesButton, 'aInterfaceUtils_confirm_interface', 'confirm_menu_yes_button', 396, 315);
+		VS.Client.addInterfaceElement(confirmMenuNoButton, 'aInterfaceUtils_confirm_interface', 'confirm_menu_no_button', 486, 315);
+		VS.Client.buildInterface('aInterfaceUtils_confirm_interface');
+
+		aInterfaceUtils.alert = function(pTitle, pMessage, pCallback, pParameters) {
+			const alertMenu = VS.Client.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
+			let num;
+			let message;
+			let title;
+			let callback;
+			let parameters;
+
+			if (alertMenu.shown) {
+				alertMenu.itemsInQueue++;
+				num = alertMenu.itemsInQueue;
+				message = 'message' + num;
+				title = 'title' + num;
+				callback = 'callback' + num;
+				parameters = 'parameters' + num;
+				alertMenu.queuedAlerts[message] = pMessage;
+				alertMenu.queuedAlerts[title] = pTitle;
+				alertMenu.queuedAlerts[callback] = pCallback;
+				alertMenu.queuedAlerts[parameters] = pParameters;
+				return;
+			}
+
+			alertMenu.callback = pCallback;
+			alertMenu.parameters = pParameters;
+			for (const elem of VS.Client.getInterfaceElements('aInterfaceUtils_alert_interface')) {
+				elem.show();
+				if (elem.name === 'alert_menu') {
+					elem.text = '<div class="aInterfaceUtils_center_title">' + pTitle + '</div><div class="aInterfaceUtils_dialog">' + pMessage + '</div>';
+				}
+			}
+			this.inDialog = true;
+		}
+
+		aInterfaceUtils.closeAlertMenu = function() {
+			const alertMenu = VS.Client.getInterfaceElement('aInterfaceUtils_alert_interface', 'alert_menu');
+			let count;
+			
+			VS.Client.hideInterface('aInterfaceUtils_alert_interface');
+
+			if (alertMenu.itemsInQueue) {
+				alertMenu.queueTracker++;
+				count = alertMenu.queueTracker;
+				setTimeout(function() {
+					VS.global.aInterfaceUtils.alert(alertMenu.queuedAlerts['message' + count], alertMenu.queuedAlerts['title' + count], alertMenu.queuedAlerts['callback' + count], alertMenu.queuedAlerts['parameters' + count]);
+				}, 500);
+				alertMenu.itemsInQueue--;
+			} else {
+				alertMenu.itemsInQueue = 0;
+				alertMenu.queueTracker = 0;
+				alertMenu.queuedAlerts = {};
+			}
+			alertMenu.text = '';
+			this.inDialog = false;
+		}
+
+		aInterfaceUtils.input = function(pText, pDefaultText, pNumbersOnly=false, pCallback, pParameters) {
+			const inputMenu = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
+			const inputText = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_input');
+			let num;
+			let text;
+			let defaultText;
+			let numbersOnly;
+			let callback;
+			let parameters;
+
+			if (inputMenu.shown) {
+				inputMenu.itemsInQueue++
+				num = inputMenu.itemsInQueue;
+				text = 'text' + num;
+				defaultText = 'defaultText' + num;
+				numbersOnly = 'numbersOnly' + num;
+				callback = 'callback' + num;
+				parameters = 'parameters' + num;
+				inputMenu.queuedInputs[text] = pText;
+				inputMenu.queuedInputs[defaultText] = pDefaultText;
+				inputMenu.queuedInputs[numbersOnly] = pNumbersOnly;
+				inputMenu.queuedInputs[callback] = pCallback;
+				inputMenu.queuedInputs[parameters] = pParameters;
+				return;
+			}
+				
+			inputMenu.closing = false;
+			inputMenu.defaultText = pDefaultText;
+			inputMenu.numbersOnly = pNumbersOnly;
+			inputMenu.callback = pCallback;
+			inputMenu.parameters = pParameters;
+			// needs to be shown to create dom element
+			inputText.show();
+			if (inputText.getDOM().children[0]) {
+				inputText.getDOM().children[0].placeholder = pDefaultText;
+			}
+
+			if (pNumbersOnly) {
+				document.getElementById('ti_aInterfaceUtils_input_interface_input_menu_input').addEventListener('input', this.useNumbersOnly);
+			}
+			
+			for (const elem of VS.Client.getInterfaceElements('aInterfaceUtils_input_interface')) {
+				elem.show();
+				if (elem.name === 'input_menu') {
+					elem.text = '<div class="aInterfaceUtils_input">' + pText + '</div>', 'input_interface';
+				}
+			}
+			this.inInput = true;
+		}
+
+		aInterfaceUtils.closeInputMenu = function() {
+			const inputMenu = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
+			const inputText = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_input');
+			const inputOk = VS.Client.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu_ok_button');
+			let count;
+
+			inputMenu.inputValue = inputText.text;
+			if (!inputMenu.inputValue) {
+				// shake error animation here
+				return;
+			}
+
+			if (inputMenu.numbersOnly) {
+				document.getElementById('ti_aInterfaceUtils_input_interface_input_menu_input').removeEventListener('input', this.useNumbersOnly);
+			}
+
+			VS.Client.hideInterface('aInterfaceUtils_input_interface');
+
+			inputMenu.closing = true;
+			
+			if (inputMenu.itemsInQueue) {
+				inputMenu.queueTracker++;
+				count = inputMenu.queueTracker;
+				setTimeout(function() {
+					VS.global.aInterfaceUtils.input(inputMenu.queuedInputs['text' + count], inputMenu.queuedInputs['defaultText' + count], inputMenu.queuedInputs['numbersOnly' + count], inputMenu.queuedInputs['callback' + count], inputMenu.queuedInputs['parameters' + count]);
+				}, 500);
+				inputMenu.itemsInQueue--;
+			} else {
+				inputMenu.itemsInQueue = 0;
+				inputMenu.queueTracker = 0;
+				inputMenu.queuedInputs = {};
+			}
+			inputMenu.text = '';
+			inputText.text = '';
+			this.inInput = false;
+		}
+
+		aInterfaceUtils.confirm = function(pTitle, pMessage, pCallback, pParameters) {
+			const confirmMenu = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
+			let num;
+			let message;
+			let title;
+			let callback;
+			let parameters;
+			
+			if (confirmMenu.shown) {
+				confirmMenu.itemsInQueue++;
+				num = confirmMenu.itemsInQueue;
+				message = 'message' + num;
+				title = 'title' + num;
+				callback = 'callback' + num;
+				parameters = 'parameters' + num;
+				confirmMenu.queuedDialogs[message] = pMessage;
+				confirmMenu.queuedDialogs[title] = pTitle;
+				confirmMenu.queuedDialogs[callback] = pCallback;
+				confirmMenu.queuedDialogs[parameters] = pParameters;
+				return;
+			}
+
+			confirmMenu.callback = pCallback;
+			confirmMenu.parameters = pParameters;
+			
+			for (const elem of VS.Client.getInterfaceElements('aInterfaceUtils_confirm_interface')) {
+				elem.show();
+				if (elem.name === 'confirm_menu') {
+					elem.text = '<div class="aInterfaceUtils_center_title">' + pTitle + '</div><div class="aInterfaceUtils_dialog">' + pMessage + '</div>';
+				}
+			}
+					
+			this.inDialog = true;
+		}
+
+		aInterfaceUtils.closeConfirmMenu = function() {
+			const confirmMenu = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
+			const acceptButton = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu_yes_button');
+			const closeButton = VS.Client.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu_no_button');
+			let count;		
+			
+			VS.Client.hideInterface('aInterfaceUtils_confirm_interface');
+
+			if (confirmMenu.itemsInQueue) {
+				confirmMenu.queueTracker++;
+				count = confirmMenu.queueTracker;
+				setTimeout(function() {
+					VS.global.aInterfaceUtils.confirm(confirmMenu.queuedDialogs['message' + count], confirmMenu.queuedDialogs['title' + count], confirmMenu.queuedDialogs['callback' + count], confirmMenu.queuedDialogs['parameters' + count]);
+				}, 500);
+				confirmMenu.itemsInQueue--;
+			} else {
+				confirmMenu.itemsInQueue = 0;
+				confirmMenu.queueTracker = 0;
+				confirmMenu.queuedDialogs = {};
+			}
+			confirmMenu.text = '';
+			this.inDialog = false;
+		}
+
+		// give this isMousedDown function to the diob type
+		VS.Type.setFunction('Diob', 'isMousedDown', function() {
+			if (VS.Client._mousedDowned === this && !VS.Client.dragging) {
+				return true;
+			}
+			return false;
+		});
+
+		VS.global.aListener.addEventListener(VS.Client, 'onWindowFocus', function() {
+			VS.global.aInterfaceUtils.preventMouseMoveEvent = true;
+		});
+
+		VS.global.aListener.addEventListener(VS.Client, 'onWindowResize', function(pWidth, pHeight) {
+			if (this._windowSize) {
+				this._windowSize.width = pWidth;
+				this._windowSize.height = pHeight;
+			}
+			this.getScreenScale(this._screenScale);
+			if (this.___EVITCA_aInventory) {
+				this.aInventory.outlineFilter.thickness = this.aInventory.outlineDefaultThickness * mainM.mapScaleWidth;
+			}
+		});
+
+		VS.global.aListener.addEventListener(VS.Client, 'onInterfaceLoaded', function(pInterface) {
+			this.buildInterface(pInterface);
+		});
+
+		VS.global.aListener.addEventListener(VS.Client, 'onMouseMove', function(pDiob, pX, pY) {
 			if (this._dragging.element) {
 				if (this.aInterfaceUtils.preventMouseMoveEvent) {
 					this.aInterfaceUtils.preventMouseMoveEvent = false;
@@ -843,11 +838,9 @@
 				let realY = (this._dragging.element.preventAutoScale ? pY * this._screenScale.y : pY) - this._dragging.yOff;
 				let maxWidth;
 				let maxHeight;
-
 				if (!this.dragging) {
 					this.dragging = true;
 				}
-
 				if (this.dragging) {
 					if (this._dragging.element.dragOptions.titlebar) {
 						if (this._dragging.element.dragOptions.titlebar.xPos >= 0 && this._dragging.element.dragOptions.titlebar.yPos >= 0 && this._dragging.element.dragOptions.titlebar.width > 0 && this._dragging.element.dragOptions.titlebar.height > 0) {
@@ -916,20 +909,9 @@
 					}
 				}
 			}
+		});
 
-			if (this.aInterfaceUtils._onMouseMove) {
-				this.aInterfaceUtils._onMouseMove.apply(this, arguments);
-			}
-		}
-
-		// assign the custom onMouseMove function to the client
-		VS.Type.setFunction('Client', 'onMouseMove', onMouseMove);
-
-		// store the original onMouseDown function if there is one
-		aInterfaceUtils._onMouseDown = VS.Type.getFunction('Client', 'onMouseDown');
-
-		// the function that will be used as the `pClient.onMouseDown` function
-		const onMouseDown = function(pDiob, pX, pY, pButton) {
+		VS.global.aListener.addEventListener(VS.Client, 'onMouseDown', function(pDiob, pX, pY, pButton) {
 			if (pButton === 1) {
 				this._mousedDowned = pDiob;
 				if (pDiob.baseType === 'Interface') {
@@ -957,18 +939,9 @@
 					}
 				}
 			}
-			if (this.aInterfaceUtils._onMouseDown) {
-				this.aInterfaceUtils._onMouseDown.apply(this, arguments);
-			}
-		}
+		});
 
-		// assign the custom onMouseDown function to the client
-		VS.Type.setFunction('Client', 'onMouseDown', onMouseDown);
-
-		// store the original onMouseUp function if there is one
-		aInterfaceUtils._onMouseUp = VS.Type.getFunction('Client', 'onMouseUp');
-
-		const releaseElement = function() {
+		VS.Client.releaseElement = function() {
 			const MAX_PLANE = 999999;
 			const self = this;
 			if (this._dragging.element.dragOptions.beingDragged) {
@@ -1007,24 +980,13 @@
 			});
 		}
 
-		// the function that will be used as the `pClient.onMouseUp` function
-		const onMouseUp = function(pDiob, pX, pY, pButton) {
+		VS.global.aListener.addEventListener(VS.Client, 'onMouseUp', function(pDiob, pX, pY, pButton) {
 			if (pButton === 1) {
 				if (this._dragging.element) {
 					this.releaseElement();
 				}
 			}
-
-			if (this.aInterfaceUtils._onMouseUp) {
-				this.aInterfaceUtils._onMouseUp.apply(this, arguments);
-			}
-		}
-
-		// assign the release element function to the Client type
-		VS.Type.setFunction('Client', 'releaseElement', releaseElement);
-		// assign the custom onMouseUp function to the Client type
-		VS.Type.setFunction('Client', 'onMouseUp', onMouseUp);
-		VS.Type.setVariables('Interface', { 'scale': { 'x': 1, 'y': 1 }, 'anchor': { 'x': 0.5, 'y': 0.5 }, '_protruding': { 'east': false, 'west': false, 'north': false, 'south': false }, 'dragOptions': { 'draggable': false, 'beingDragged': false, 'parent': false, 'clampedPos': { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } } })
+		});
 
 		aInterfaceUtils.handleMouseOverDragArea = function(pReset) {
 			if (pReset) {
@@ -1060,164 +1022,8 @@
 			}
 		}
 
-		// store the original onNew function if there is one
-		aInterfaceUtils._onNewInterface = VS.Type.getFunction('Interface', 'onNew');
-		
-		// the function that will be used as the `Interface.onNew` function
-		const onNewInterface = function() {
-			const interfaceName = this.getInterfaceName();
-			this.defaultPos = { 'x': this.xPos ? this.xPos : 0, 'y': this.yPos ? this.yPos : 0 };
-			this.defaultDisplay = { 'layer': this.layer, 'plane': this.plane };
-			this.defaultSize = { 'width': this.width, 'height': this.height };
-			this.defaultScreenPercentage = { 'x': ((100 * this.xPos ? this.xPos : 0) / VS.World.getGameSize().width), 'y': ((100 * this.yPos ? this.yPos : 0) / VS.World.getGameSize().height) };
-			if (!interfaceName) return;
-			this.interfaceName = interfaceName;
-
-			if (this.dragOptions.draggable) {
-				if (this.dragOptions.titlebar) {
-					if (!this.dragOptions.titlebar.xPos) {
-						this.dragOptions.titlebar.xPos = 0;
-					}
-
-					if (!this.dragOptions.titlebar.yPos) {
-						this.dragOptions.titlebar.yPos = 0;
-					}
-				}
-
-				if (!this.aInterfaceUtilsonMouseEnterSet) {
-					this.aInterfaceUtilsonMouseEnter = this.onMouseEnter;
-					this.aInterfaceUtilsonMouseEnterSet = true;
-					this.onMouseEnter = function(pClient, pX, pY) {
-						if (this.dragOptions.titlebar) {
-							if (this.dragOptions.titlebar.xPos >= 0 && this.dragOptions.titlebar.yPos >= 0 && this.dragOptions.titlebar.width > 0 && this.dragOptions.titlebar.height > 0) {
-								const realX = this.xPos + pX;
-								const realY = this.yPos + pY;
-								const titleBarX = this.xPos + this.dragOptions.titlebar.xPos;
-								const titleBarWidthX = titleBarX + this.dragOptions.titlebar.width;
-								const titleBarY = this.yPos + this.dragOptions.titlebar.yPos;
-								const titleBarHeightY = titleBarY + this.dragOptions.titlebar.height;
-								if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY) {
-									VS.global.aInterfaceUtils.handleMouseOverDragArea();
-								}
-							}
-							if (this.aInterfaceUtilsonMouseEnter) {
-								this.aInterfaceUtilsonMouseEnter.apply(this, arguments);
-							}
-						} else if (this.dragOptions.draggable) {
-							VS.global.aInterfaceUtils.handleMouseOverDragArea();
-						}
-					}
-				}
-
-				if (!this.aInterfaceUtilsonMouseExitSet) {
-					this.aInterfaceUtilsonMouseExit = this.onMouseExit;
-					this.aInterfaceUtilsonMouseExitSet = true;
-					this.onMouseExit = function(pClient, pX, pY) {
-						VS.global.aInterfaceUtils.handleMouseOverDragArea(true);
-						if (this.aInterfaceUtilsonMouseExit) {
-							this.aInterfaceUtilsonMouseExit.apply(this, arguments);
-						}
-					}
-				}
-
-				if (!this.aInterfaceUtilsonMouseMoveSet) {
-					this.aInterfaceUtilsonMouseMove = this.onMouseMove;
-					this.aInterfaceUtilsonMouseMoveSet = true;
-					this.onMouseMove = function(pClient, pX, pY) {
-						if (this.dragOptions.titlebar) {
-							if (this.dragOptions.titlebar.xPos >= 0 && this.dragOptions.titlebar.yPos >= 0 && this.dragOptions.titlebar.width > 0 && this.dragOptions.titlebar.height > 0) {
-								const realX = this.xPos + pX;
-								const realY = this.yPos + pY;
-								const titleBarX = this.xPos + this.dragOptions.titlebar.xPos;
-								const titleBarWidthX = titleBarX + this.dragOptions.titlebar.width;
-								const titleBarY = this.yPos + this.dragOptions.titlebar.yPos;
-								const titleBarHeightY = titleBarY + this.dragOptions.titlebar.height;
-								if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY) {
-									VS.global.aInterfaceUtils.handleMouseOverDragArea();
-								} else {
-									VS.global.aInterfaceUtils.handleMouseOverDragArea(true);
-								}
-							}
-							if (this.aInterfaceUtilsonMouseMove) {
-								this.aInterfaceUtilsonMouseMove.apply(this, arguments);
-							}
-						}
-					}
-				}
-				this.dragOptions.protrudingChildren = { 'x': { 'minPos': 0, 'maxPos': 0, 'minWidth': 0, 'maxWidth': 0 }, 'y': { 'minPos': 0, 'maxPos': 0, 'minHeight': 0, 'maxHeight': 0 }};
-				this.dragOptions.clampedPos = { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } };
-			}
-
-			if (VS.global.aInterfaceUtils._onNewInterface) {
-				VS.global.aInterfaceUtils._onNewInterface.apply(this, arguments);
-			}
-		}
-
-		// assign the custom onNew function to the Interface type
-		VS.Type.setFunction('Interface', 'onNew', onNewInterface);
-
-		const getProtudingChildren = function(pInterface) {
-			for (const element of VS.Client.getInterfaceElements(pInterface)) {
-				if (element.parentElement === this.name) {
-					const greaterX = (element.xPos + element.width > this.xPos + this.width) && (this.dragOptions.protrudingChildren.x.maxPos ? element.xPos > this.dragOptions.protrudingChildren.x.maxPos : true);
-					const lesserX = (element.xPos < this.xPos) && (this.dragOptions.protrudingChildren.x.minPos ? element.xPos < this.dragOptions.protrudingChildren.x.minPos : true);
-					const greaterY = (element.yPos + element.height > this.yPos + this.height) && (this.dragOptions.protrudingChildren.y.maxPos ? element.yPos > this.dragOptions.protrudingChildren.y.maxPos : true);
-					const lesserY = (element.yPos < this.yPos) && (this.dragOptions.protrudingChildren.y.minPos ? element.yPos < this.dragOptions.protrudingChildren.y.minPos : true);
-
-					if (greaterX) {
-						this.dragOptions.protrudingChildren.x.maxPos = element.xPos;
-						this.dragOptions.protrudingChildren.x.maxWidth = element.width;
-						this._protruding.east = true;
-					} else if (lesserX) {
-						this.dragOptions.protrudingChildren.x.minPos = element.xPos;
-						this.dragOptions.protrudingChildren.x.minWidth = element.width;
-						this._protruding.west = true;
-					}
-					if (greaterY) {
-						this.dragOptions.protrudingChildren.y.maxPos = element.yPos;
-						this.dragOptions.protrudingChildren.y.maxHeight = element.height;
-						this._protruding.south = true;
-					} else if (lesserY) {
-						this.dragOptions.protrudingChildren.y.minPos = element.yPos;
-						this.dragOptions.protrudingChildren.y.minHeight = element.height;
-						this._protruding.north = true;
-					}
-				}
-			}
-		}
-
-		// assign the custom getProtudingChildren function to the Interface type
-		VS.Type.setFunction('Interface', 'getProtudingChildren', getProtudingChildren);
-
-		// store the original onShow function if there is one
-		aInterfaceUtils._onShowInterface = VS.Type.getFunction('Interface', 'onShow');
-		
-		// the function that will be used as the `Interface.onShow` function
-		const onShowInterface = function(pClient) {
-			this.shown = true;
-			if (VS.global.aInterfaceUtils._onShowInterface) {
-				VS.global.aInterfaceUtils._onShowInterface.apply(this, arguments);
-			}
-		}
-
-		// assign the custom onShow function to the Interface type
-		VS.Type.setFunction('Interface', 'onShow', onShowInterface);
-
-		// store the original onHide function if there is one
-		aInterfaceUtils._onHideInterface = VS.Type.getFunction('Interface', 'onHide');
-		
-		// the function that will be used as the `Interface.onHide` function
-		const onHideInterface = function(pClient) {
-			this.shown = false;
-			if (VS.global.aInterfaceUtils._onHideInterface) {
-				VS.global.aInterfaceUtils._onHideInterface.apply(this, arguments);
-			}
-		}
-		
-		// assign the custom onHide function to the Interface type
-		VS.Type.setFunction('Interface', 'onHide', onHideInterface);
-
-		const repositionInterface = function(pX, pY, pDefaultX, pDefaultY) {
+		// give this reposition function to the interface type
+		VS.Type.setFunction('Interface', 'reposition', function(pX, pY, pDefaultX, pDefaultY) {
 			const size = {
 				'width': (this.preventAutoScale ? VS.Client._windowSize.width : VS.Client._gameSize.width),
 				'height': (this.preventAutoScale ? VS.Client._windowSize.height : VS.Client._gameSize.height)
@@ -1246,10 +1052,7 @@
 			if (protrudingDirection === 's' || protrudingDirection === 'ws' || protrudingDirection === 'sn' || protrudingDirection === 'es' || protrudingDirection === 'ews' || protrudingDirection === 'ewns' || protrudingDirection === 'ens' || protrudingDirection === 'wns') {
 				this.yPos = Math.clamp(pY - yOff + this.defaultPos.y - pDefaultY, this.dragOptions.clampedPos.y.minPos, size.height - this.dragOptions.clampedPos.y.maxPos);
 			}
-		}
-
-		// give this reposition function to the interface type
-		VS.Type.setFunction('Interface', 'reposition', repositionInterface);
+		});
 
 		const leave = () => {
 			if (VS.Client) {
