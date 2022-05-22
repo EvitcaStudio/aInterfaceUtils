@@ -825,9 +825,6 @@
 				this._windowSize.height = pHeight;
 			}
 			this.getScreenScale(this._screenScale);
-			if (this.___EVITCA_aInventory) {
-				this.aInventory.outlineFilter.thickness = this.aInventory.outlineDefaultThickness * mainM.mapScaleWidth;
-			}
 		});
 
 		VS.global.aListener.addEventListener(VS.Client, 'onMouseMove', function(pDiob, pX, pY) {
