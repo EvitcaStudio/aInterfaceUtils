@@ -1,4 +1,215 @@
 (() => {
+	const _onInterfacedLoaded = VS.Type.getFunction('Client', 'onInterfaceLoaded');
+	VS.Type.setVariables('Client', { _onInterfacedLoaded: _onInterfacedLoaded });
+	VS.Type.setVariables('Interface', { 'scale': { 'x': 1, 'y': 1 }, 'anchor': { 'x': 0.5, 'y': 0.5 }, '_protruding': { 'east': false, 'west': false, 'north': false, 'south': false }, 'dragOptions': { 'draggable': false, 'beingDragged': false, 'parent': false, 'clampedPos': { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } } });
+
+	const onInterfaceLoaded = function(pInterface) {
+		let protruding;
+		let protrudingDirection;
+
+		const setup = function(pElement) {
+			const interfaceName = pElement.getInterfaceName();
+			pElement.defaultPos = { 'x': pElement.xPos ? pElement.xPos : 0, 'y': pElement.yPos ? pElement.yPos : 0 };
+			pElement.defaultDisplay = { 'layer': pElement.layer, 'plane': pElement.plane };
+			pElement.defaultSize = { 'width': pElement.width, 'height': pElement.height };
+			pElement.defaultScreenPercentage = { 'x': ((100 * pElement.xPos ? pElement.xPos : 0) / VS.World.getGameSize().width), 'y': ((100 * pElement.yPos ? pElement.yPos : 0) / VS.World.getGameSize().height) };
+			if (!interfaceName) return;
+			pElement.interfaceName = interfaceName;
+
+			if (pElement.dragOptions.draggable) {
+				if (pElement.dragOptions.titlebar) {
+					if (!pElement.dragOptions.titlebar.xPos) {
+						pElement.dragOptions.titlebar.xPos = 0;
+					}
+
+					if (!pElement.dragOptions.titlebar.yPos) {
+						pElement.dragOptions.titlebar.yPos = 0;
+					}
+				}
+
+				VS.global.aListener.addEventListener(pElement, 'onMouseEnter', function(pClient, pX, pY) {
+					if (pElement.dragOptions.titlebar) {
+						if (pElement.dragOptions.titlebar.xPos >= 0 && pElement.dragOptions.titlebar.yPos >= 0 && pElement.dragOptions.titlebar.width > 0 && pElement.dragOptions.titlebar.height > 0) {
+							const realX = pElement.xPos + pX;
+							const realY = pElement.yPos + pY;
+							const titleBarX = pElement.xPos + pElement.dragOptions.titlebar.xPos;
+							const titleBarWidthX = titleBarX + pElement.dragOptions.titlebar.width;
+							const titleBarY = pElement.yPos + pElement.dragOptions.titlebar.yPos;
+							const titleBarHeightY = titleBarY + pElement.dragOptions.titlebar.height;
+							if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY) {
+								VS.global.aInterfaceUtils.handleMouseOverDragArea();
+							}
+						}
+					} else if (pElement.dragOptions.draggable) {
+						VS.global.aInterfaceUtils.handleMouseOverDragArea();
+					}
+				});
+
+				VS.global.aListener.addEventListener(pElement, 'onMouseExit', function(pClient, pX, pY) {
+					VS.global.aInterfaceUtils.handleMouseOverDragArea(true);
+				});
+
+				VS.global.aListener.addEventListener(pElement, 'onMouseMove', function(pClient, pX, pY) {
+					if (pElement.dragOptions.titlebar) {
+						if (pElement.dragOptions.titlebar.xPos >= 0 && pElement.dragOptions.titlebar.yPos >= 0 && pElement.dragOptions.titlebar.width > 0 && pElement.dragOptions.titlebar.height > 0) {
+							const realX = pElement.xPos + pX;
+							const realY = pElement.yPos + pY;
+							const titleBarX = pElement.xPos + pElement.dragOptions.titlebar.xPos;
+							const titleBarWidthX = titleBarX + pElement.dragOptions.titlebar.width;
+							const titleBarY = pElement.yPos + pElement.dragOptions.titlebar.yPos;
+							const titleBarHeightY = titleBarY + pElement.dragOptions.titlebar.height;
+							if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY) {
+								VS.global.aInterfaceUtils.handleMouseOverDragArea();
+							} else {
+								VS.global.aInterfaceUtils.handleMouseOverDragArea(true);
+							}
+						}
+					}
+				});
+
+				VS.global.aListener.addEventListener(pElement, 'onShow', function(pClient) {
+					pElement.shown = true;
+				});
+
+				VS.global.aListener.addEventListener(pElement, 'onHide', function(pClient) {
+					pElement.shown = false;
+				});
+
+				pElement.dragOptions.protrudingChildren = { 'x': { 'minPos': 0, 'maxPos': 0, 'minWidth': 0, 'maxWidth': 0 }, 'y': { 'minPos': 0, 'maxPos': 0, 'minHeight': 0, 'maxHeight': 0 }};
+				pElement.dragOptions.clampedPos = { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } };
+			}
+		}
+
+		const getProtudingChildren = function(pElement, pInterface) {
+			for (const element of VS.Client.getInterfaceElements(pInterface)) {
+				if (element.parentElement === pElement.name) {
+					const greaterX = (element.xPos + element.width > pElement.xPos + pElement.width) && (pElement.dragOptions.protrudingChildren.x.maxPos ? element.xPos > pElement.dragOptions.protrudingChildren.x.maxPos : true);
+					const lesserX = (element.xPos < pElement.xPos) && (pElement.dragOptions.protrudingChildren.x.minPos ? element.xPos < pElement.dragOptions.protrudingChildren.x.minPos : true);
+					const greaterY = (element.yPos + element.height > pElement.yPos + pElement.height) && (pElement.dragOptions.protrudingChildren.y.maxPos ? element.yPos > pElement.dragOptions.protrudingChildren.y.maxPos : true);
+					const lesserY = (element.yPos < pElement.yPos) && (pElement.dragOptions.protrudingChildren.y.minPos ? element.yPos < pElement.dragOptions.protrudingChildren.y.minPos : true);
+
+					if (greaterX) {
+						pElement.dragOptions.protrudingChildren.x.maxPos = element.xPos;
+						pElement.dragOptions.protrudingChildren.x.maxWidth = element.width;
+						pElement._protruding.east = true;
+					} else if (lesserX) {
+						pElement.dragOptions.protrudingChildren.x.minPos = element.xPos;
+						pElement.dragOptions.protrudingChildren.x.minWidth = element.width;
+						pElement._protruding.west = true;
+					}
+					if (greaterY) {
+						pElement.dragOptions.protrudingChildren.y.maxPos = element.yPos;
+						pElement.dragOptions.protrudingChildren.y.maxHeight = element.height;
+						pElement._protruding.south = true;
+					} else if (lesserY) {
+						pElement.dragOptions.protrudingChildren.y.minPos = element.yPos;
+						pElement.dragOptions.protrudingChildren.y.minHeight = element.height;
+						pElement._protruding.north = true;
+					}
+				}
+			}
+		}
+
+		for (const element of this.getInterfaceElements(pInterface)) {
+			setup(element);
+			if (element.dragOptions.draggable && element.dragOptions.parent) {
+				getProtudingChildren(element, pInterface);
+				protruding = element._protruding;
+			}
+		}
+
+		for (const element of this.getInterfaceElements(pInterface)) {
+			if (protruding) {
+				element._protruding = protruding;
+				protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][element._protruding.east | (element._protruding.west << 1) | (element._protruding.north << 2) | (element._protruding.south << 3)];
+			}
+
+			if (element.dragOptions.draggable && element.dragOptions.parent) {
+				if (protrudingDirection === 'none') {
+					element.dragOptions.clampedPos = { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } };
+					continue;
+				}
+
+				if (protrudingDirection === 'e' || protrudingDirection === 'en' || protrudingDirection === 'es' || protrudingDirection === 'ens') {
+					element.dragOptions.clampedPos.x = { 'maxPos': element.dragOptions.protrudingChildren.x.maxPos - element.xPos - element.width + element.dragOptions.protrudingChildren.x.maxWidth, 'minPos': 0 };
+				}
+
+				if (protrudingDirection === 'w' || protrudingDirection === 'wn' || protrudingDirection === 'ws' || protrudingDirection === 'wns') {
+					element.dragOptions.clampedPos.x = { 'maxPos': 0, 'minPos': element.xPos - element.dragOptions.protrudingChildren.x.minPos };
+				}
+
+				if (protrudingDirection === 'ew' || protrudingDirection === 'ewn' || protrudingDirection === 'ews' || protrudingDirection === 'ewns') {
+					element.dragOptions.clampedPos.x = { 'maxPos': element.dragOptions.protrudingChildren.x.maxPos - element.xPos - element.width + element.dragOptions.protrudingChildren.x.maxWidth, 'minPos': element.xPos - element.dragOptions.protrudingChildren.x.minPos };
+				}
+
+				if (protrudingDirection === 'n' || protrudingDirection === 'en' || protrudingDirection === 'wn' || protrudingDirection === 'ewn') {
+					element.dragOptions.clampedPos.y = { 'maxPos': 0, 'minPos': element.yPos - element.dragOptions.protrudingChildren.y.minPos };
+				}
+
+				if (protrudingDirection === 's' || protrudingDirection === 'es' || protrudingDirection === 'ws' || protrudingDirection === 'ews') {
+					element.dragOptions.clampedPos.y = { 'maxPos': element.dragOptions.protrudingChildren.y.maxPos - element.yPos - element.height + element.dragOptions.protrudingChildren.y.maxHeight, 'minPos': 0 };
+				}
+
+				if (protrudingDirection === 'sn' || protrudingDirection === 'ens' || protrudingDirection === 'wns' || protrudingDirection === 'ewns') {
+					element.dragOptions.clampedPos.y = { 'maxPos': element.dragOptions.protrudingChildren.y.maxPos - element.yPos - element.height + element.dragOptions.protrudingChildren.y.maxHeight, 'minPos': element.yPos - element.dragOptions.protrudingChildren.y.minPos };
+				}
+				continue;
+			}
+
+			if (element.parentElement) {
+				const parent = this.getInterfaceElement(pInterface, element.parentElement);
+				const noneX = Math.sign(element.xPos - parent.xPos) === -1 ? 0 : element.xPos - parent.xPos;
+				const noneY = Math.sign(element.yPos - parent.yPos) === -1 ? 0 : element.yPos - parent.yPos;
+				element.dragOptions.owner = parent;
+
+				if (protrudingDirection === 'none') {
+					element.dragOptions.clampedPos.x.maxPos = Math.sign(element.xPos - parent.xPos) === -1 ? 0 : element.xPos - parent.xPos;
+					element.dragOptions.clampedPos.x.minPos = element.dragOptions.clampedPos.x.maxPos;
+					element.dragOptions.clampedPos.y.maxPos = Math.sign(element.yPos - parent.yPos) === -1 ? 0 : element.yPos - parent.yPos;
+					element.dragOptions.clampedPos.y.minPos = element.dragOptions.clampedPos.y.maxPos;
+					continue;
+				}
+
+				if (protrudingDirection === 'n' || protrudingDirection === 's' || protrudingDirection === 'sn') {
+					element.dragOptions.clampedPos.x = { 'maxPos': noneX, 'minPos': noneX };
+				}
+
+				if (protrudingDirection === 'e' || protrudingDirection === 'es' || protrudingDirection === 'en' || protrudingDirection === 'ens') {
+					element.dragOptions.clampedPos.x = { 'maxPos': parent.dragOptions.protrudingChildren.x.maxPos - element.xPos + element.width, 'minPos': noneX };
+				}
+
+				if (protrudingDirection === 'w' || protrudingDirection === 'ws' || protrudingDirection === 'wns' || protrudingDirection === 'wn') {
+					element.dragOptions.clampedPos.x = { 'maxPos': element.xPos - parent.xPos, 'minPos': element.xPos - parent.dragOptions.protrudingChildren.x.minPos };
+				}
+
+				if (protrudingDirection === 'ew' || protrudingDirection === 'ewn' || protrudingDirection === 'ews' || protrudingDirection === 'ewns') {
+					element.dragOptions.clampedPos.x = { 'maxPos': parent.dragOptions.protrudingChildren.x.maxPos - element.xPos + element.width, 'minPos': element.xPos - parent.dragOptions.protrudingChildren.x.minPos };
+				}
+
+				if (protrudingDirection === 'n' || protrudingDirection === 'wn' || protrudingDirection === 'en' || protrudingDirection === 'ewn') {
+					element.dragOptions.clampedPos.y = { 'maxPos': element.yPos - parent.yPos, 'minPos': element.yPos - parent.dragOptions.protrudingChildren.y.minPos };
+				}
+
+				if (protrudingDirection === 's' || protrudingDirection === 'ws' || protrudingDirection === 'es' || protrudingDirection === 'ews') {
+					element.dragOptions.clampedPos.y = { 'maxPos': parent.dragOptions.protrudingChildren.y.maxPos - element.yPos + element.height, 'minPos': noneY };
+				}
+
+				if (protrudingDirection === 'e' || protrudingDirection === 'w' || protrudingDirection === 'ew') {
+					element.dragOptions.clampedPos.y = { 'maxPos': noneY, 'minPos': noneY };
+				}
+
+				if (protrudingDirection === 'sn' || protrudingDirection === 'ens' || protrudingDirection === 'wns' || protrudingDirection === 'ewns') {
+					element.dragOptions.clampedPos.y = { 'maxPos': parent.dragOptions.protrudingChildren.y.maxPos - element.yPos + element.height, 'minPos': element.yPos - parent.dragOptions.protrudingChildren.y.minPos };
+				}
+			}
+		}
+		if (this._onInterfacedLoaded && typeof(this._onInterfacedLoaded) === 'function') {
+			this._onInterfacedLoaded.apply(this, arguments);
+		}
+	};
+	
+	VS.Type.setFunction('Client', 'onInterfaceLoaded', onInterfaceLoaded);
+
 	const engineWaitId = setInterval(() => {
 		if (VS.global && VS.global.aListener && VS.Client) {
 			clearInterval(engineWaitId);
@@ -67,217 +278,6 @@
 				opacity: 0.5;
 			}
 		`);
-
-		VS.Type.setVariables('Interface', { 'scale': { 'x': 1, 'y': 1 }, 'anchor': { 'x': 0.5, 'y': 0.5 }, '_protruding': { 'east': false, 'west': false, 'north': false, 'south': false }, 'dragOptions': { 'draggable': false, 'beingDragged': false, 'parent': false, 'clampedPos': { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } }, 'titlebar': { 'width': 0, 'height': 0, 'xPos': 0, 'yPos': 0 } } });
-
-		if (!aInterfaceUtils.onInterfaceLoadedSet) {
-			aInterfaceUtils.onInterfaceLoaded = VS.Client.onInterfaceLoaded;
-			aInterfaceUtils.onInterfaceLoadedSet = true;
-			VS.Client.onInterfaceLoaded = function(pInterface) {
-				let protruding;
-				let protrudingDirection;
-
-				const setup = function(pElement) {
-					const interfaceName = pElement.getInterfaceName();
-					pElement.defaultPos = { 'x': pElement.xPos ? pElement.xPos : 0, 'y': pElement.yPos ? pElement.yPos : 0 };
-					pElement.defaultDisplay = { 'layer': pElement.layer, 'plane': pElement.plane };
-					pElement.defaultSize = { 'width': pElement.width, 'height': pElement.height };
-					pElement.defaultScreenPercentage = { 'x': ((100 * pElement.xPos ? pElement.xPos : 0) / VS.World.getGameSize().width), 'y': ((100 * pElement.yPos ? pElement.yPos : 0) / VS.World.getGameSize().height) };
-					if (!interfaceName) return;
-					pElement.interfaceName = interfaceName;
-
-					if (pElement.dragOptions.draggable) {
-						if (pElement.dragOptions.titlebar) {
-							if (!pElement.dragOptions.titlebar.xPos) {
-								pElement.dragOptions.titlebar.xPos = 0;
-							}
-
-							if (!pElement.dragOptions.titlebar.yPos) {
-								pElement.dragOptions.titlebar.yPos = 0;
-							}
-						}
-
-						VS.global.aListener.addEventListener(pElement, 'onMouseEnter', function(pClient, pX, pY) {
-							if (pElement.dragOptions.titlebar) {
-								if (pElement.dragOptions.titlebar.xPos >= 0 && pElement.dragOptions.titlebar.yPos >= 0 && pElement.dragOptions.titlebar.width > 0 && pElement.dragOptions.titlebar.height > 0) {
-									const realX = pElement.xPos + pX;
-									const realY = pElement.yPos + pY;
-									const titleBarX = pElement.xPos + pElement.dragOptions.titlebar.xPos;
-									const titleBarWidthX = titleBarX + pElement.dragOptions.titlebar.width;
-									const titleBarY = pElement.yPos + pElement.dragOptions.titlebar.yPos;
-									const titleBarHeightY = titleBarY + pElement.dragOptions.titlebar.height;
-									if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY) {
-										VS.global.aInterfaceUtils.handleMouseOverDragArea();
-									}
-								}
-							} else if (pElement.dragOptions.draggable) {
-								VS.global.aInterfaceUtils.handleMouseOverDragArea();
-							}
-						});
-
-						VS.global.aListener.addEventListener(pElement, 'onMouseExit', function(pClient, pX, pY) {
-							VS.global.aInterfaceUtils.handleMouseOverDragArea(true);
-						});
-
-						VS.global.aListener.addEventListener(pElement, 'onMouseMove', function(pClient, pX, pY) {
-							if (pElement.dragOptions.titlebar) {
-								if (pElement.dragOptions.titlebar.xPos >= 0 && pElement.dragOptions.titlebar.yPos >= 0 && pElement.dragOptions.titlebar.width > 0 && pElement.dragOptions.titlebar.height > 0) {
-									const realX = pElement.xPos + pX;
-									const realY = pElement.yPos + pY;
-									const titleBarX = pElement.xPos + pElement.dragOptions.titlebar.xPos;
-									const titleBarWidthX = titleBarX + pElement.dragOptions.titlebar.width;
-									const titleBarY = pElement.yPos + pElement.dragOptions.titlebar.yPos;
-									const titleBarHeightY = titleBarY + pElement.dragOptions.titlebar.height;
-									if (realX >= titleBarX && realX <= titleBarWidthX && realY >= titleBarY && realY <= titleBarHeightY) {
-										VS.global.aInterfaceUtils.handleMouseOverDragArea();
-									} else {
-										VS.global.aInterfaceUtils.handleMouseOverDragArea(true);
-									}
-								}
-							}
-						});
-
-						VS.global.aListener.addEventListener(pElement, 'onShow', function(pClient) {
-							pElement.shown = true;
-						});
-
-						VS.global.aListener.addEventListener(pElement, 'onHide', function(pClient) {
-							pElement.shown = false;
-						});
-
-						pElement.dragOptions.protrudingChildren = { 'x': { 'minPos': 0, 'maxPos': 0, 'minWidth': 0, 'maxWidth': 0 }, 'y': { 'minPos': 0, 'maxPos': 0, 'minHeight': 0, 'maxHeight': 0 }};
-						pElement.dragOptions.clampedPos = { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } };
-					}
-				}
-
-				const getProtudingChildren = function(pElement, pInterface) {
-					for (const element of VS.Client.getInterfaceElements(pInterface)) {
-						if (element.parentElement === pElement.name) {
-							const greaterX = (element.xPos + element.width > pElement.xPos + pElement.width) && (pElement.dragOptions.protrudingChildren.x.maxPos ? element.xPos > pElement.dragOptions.protrudingChildren.x.maxPos : true);
-							const lesserX = (element.xPos < pElement.xPos) && (pElement.dragOptions.protrudingChildren.x.minPos ? element.xPos < pElement.dragOptions.protrudingChildren.x.minPos : true);
-							const greaterY = (element.yPos + element.height > pElement.yPos + pElement.height) && (pElement.dragOptions.protrudingChildren.y.maxPos ? element.yPos > pElement.dragOptions.protrudingChildren.y.maxPos : true);
-							const lesserY = (element.yPos < pElement.yPos) && (pElement.dragOptions.protrudingChildren.y.minPos ? element.yPos < pElement.dragOptions.protrudingChildren.y.minPos : true);
-
-							if (greaterX) {
-								pElement.dragOptions.protrudingChildren.x.maxPos = element.xPos;
-								pElement.dragOptions.protrudingChildren.x.maxWidth = element.width;
-								pElement._protruding.east = true;
-							} else if (lesserX) {
-								pElement.dragOptions.protrudingChildren.x.minPos = element.xPos;
-								pElement.dragOptions.protrudingChildren.x.minWidth = element.width;
-								pElement._protruding.west = true;
-							}
-							if (greaterY) {
-								pElement.dragOptions.protrudingChildren.y.maxPos = element.yPos;
-								pElement.dragOptions.protrudingChildren.y.maxHeight = element.height;
-								pElement._protruding.south = true;
-							} else if (lesserY) {
-								pElement.dragOptions.protrudingChildren.y.minPos = element.yPos;
-								pElement.dragOptions.protrudingChildren.y.minHeight = element.height;
-								pElement._protruding.north = true;
-							}
-						}
-					}
-				}
-
-				for (const element of this.getInterfaceElements(pInterface)) {
-					setup(element);
-					if (element.dragOptions.draggable && element.dragOptions.parent) {
-						getProtudingChildren(element, pInterface);
-						protruding = element._protruding;
-					}
-				}
-
-				for (const element of this.getInterfaceElements(pInterface)) {
-					if (protruding) {
-						element._protruding = protruding;
-						protrudingDirection = ['none', 'e', 'w', 'ew', 'n', 'en', 'wn', 'ewn', 's', 'es', 'ws', 'ews', 'sn', 'ens', 'wns', 'ewns'][element._protruding.east | (element._protruding.west << 1) | (element._protruding.north << 2) | (element._protruding.south << 3)];
-					}
-
-					if (element.dragOptions.draggable && element.dragOptions.parent) {
-						if (protrudingDirection === 'none') {
-							element.dragOptions.clampedPos = { 'x': { 'maxPos': 0, 'minPos': 0 }, 'y': { 'maxPos': 0, 'minPos': 0 } };
-							continue;
-						}
-
-						if (protrudingDirection === 'e' || protrudingDirection === 'en' || protrudingDirection === 'es' || protrudingDirection === 'ens') {
-							element.dragOptions.clampedPos.x = { 'maxPos': element.dragOptions.protrudingChildren.x.maxPos - element.xPos - element.width + element.dragOptions.protrudingChildren.x.maxWidth, 'minPos': 0 };
-						}
-
-						if (protrudingDirection === 'w' || protrudingDirection === 'wn' || protrudingDirection === 'ws' || protrudingDirection === 'wns') {
-							element.dragOptions.clampedPos.x = { 'maxPos': 0, 'minPos': element.xPos - element.dragOptions.protrudingChildren.x.minPos };
-						}
-
-						if (protrudingDirection === 'ew' || protrudingDirection === 'ewn' || protrudingDirection === 'ews' || protrudingDirection === 'ewns') {
-							element.dragOptions.clampedPos.x = { 'maxPos': element.dragOptions.protrudingChildren.x.maxPos - element.xPos - element.width + element.dragOptions.protrudingChildren.x.maxWidth, 'minPos': element.xPos - element.dragOptions.protrudingChildren.x.minPos };
-						}
-
-						if (protrudingDirection === 'n' || protrudingDirection === 'en' || protrudingDirection === 'wn' || protrudingDirection === 'ewn') {
-							element.dragOptions.clampedPos.y = { 'maxPos': 0, 'minPos': element.yPos - element.dragOptions.protrudingChildren.y.minPos };
-						}
-
-						if (protrudingDirection === 's' || protrudingDirection === 'es' || protrudingDirection === 'ws' || protrudingDirection === 'ews') {
-							element.dragOptions.clampedPos.y = { 'maxPos': element.dragOptions.protrudingChildren.y.maxPos - element.yPos - element.height + element.dragOptions.protrudingChildren.y.maxHeight, 'minPos': 0 };
-						}
-
-						if (protrudingDirection === 'sn' || protrudingDirection === 'ens' || protrudingDirection === 'wns' || protrudingDirection === 'ewns') {
-							element.dragOptions.clampedPos.y = { 'maxPos': element.dragOptions.protrudingChildren.y.maxPos - element.yPos - element.height + element.dragOptions.protrudingChildren.y.maxHeight, 'minPos': element.yPos - element.dragOptions.protrudingChildren.y.minPos };
-						}
-						continue;
-					}
-
-					if (element.parentElement) {
-						const parent = this.getInterfaceElement(pInterface, element.parentElement);
-						const noneX = Math.sign(element.xPos - parent.xPos) === -1 ? 0 : element.xPos - parent.xPos;
-						const noneY = Math.sign(element.yPos - parent.yPos) === -1 ? 0 : element.yPos - parent.yPos;
-						element.dragOptions.owner = parent;
-
-						if (protrudingDirection === 'none') {
-							element.dragOptions.clampedPos.x.maxPos = Math.sign(element.xPos - parent.xPos) === -1 ? 0 : element.xPos - parent.xPos;
-							element.dragOptions.clampedPos.x.minPos = element.dragOptions.clampedPos.x.maxPos;
-							element.dragOptions.clampedPos.y.maxPos = Math.sign(element.yPos - parent.yPos) === -1 ? 0 : element.yPos - parent.yPos;
-							element.dragOptions.clampedPos.y.minPos = element.dragOptions.clampedPos.y.maxPos;
-							continue;
-						}
-
-						if (protrudingDirection === 'n' || protrudingDirection === 's' || protrudingDirection === 'sn') {
-							element.dragOptions.clampedPos.x = { 'maxPos': noneX, 'minPos': noneX };
-						}
-
-						if (protrudingDirection === 'e' || protrudingDirection === 'es' || protrudingDirection === 'en' || protrudingDirection === 'ens') {
-							element.dragOptions.clampedPos.x = { 'maxPos': parent.dragOptions.protrudingChildren.x.maxPos - element.xPos + element.width, 'minPos': noneX };
-						}
-
-						if (protrudingDirection === 'w' || protrudingDirection === 'ws' || protrudingDirection === 'wns' || protrudingDirection === 'wn') {
-							element.dragOptions.clampedPos.x = { 'maxPos': element.xPos - parent.xPos, 'minPos': element.xPos - parent.dragOptions.protrudingChildren.x.minPos };
-						}
-
-						if (protrudingDirection === 'ew' || protrudingDirection === 'ewn' || protrudingDirection === 'ews' || protrudingDirection === 'ewns') {
-							element.dragOptions.clampedPos.x = { 'maxPos': parent.dragOptions.protrudingChildren.x.maxPos - element.xPos + element.width, 'minPos': element.xPos - parent.dragOptions.protrudingChildren.x.minPos };
-						}
-
-						if (protrudingDirection === 'n' || protrudingDirection === 'wn' || protrudingDirection === 'en' || protrudingDirection === 'ewn') {
-							element.dragOptions.clampedPos.y = { 'maxPos': element.yPos - parent.yPos, 'minPos': element.yPos - parent.dragOptions.protrudingChildren.y.minPos };
-						}
-
-						if (protrudingDirection === 's' || protrudingDirection === 'ws' || protrudingDirection === 'es' || protrudingDirection === 'ews') {
-							element.dragOptions.clampedPos.y = { 'maxPos': parent.dragOptions.protrudingChildren.y.maxPos - element.yPos + element.height, 'minPos': noneY };
-						}
-
-						if (protrudingDirection === 'e' || protrudingDirection === 'w' || protrudingDirection === 'ew') {
-							element.dragOptions.clampedPos.y = { 'maxPos': noneY, 'minPos': noneY };
-						}
-
-						if (protrudingDirection === 'sn' || protrudingDirection === 'ens' || protrudingDirection === 'wns' || protrudingDirection === 'ewns') {
-							element.dragOptions.clampedPos.y = { 'maxPos': parent.dragOptions.protrudingChildren.y.maxPos - element.yPos + element.height, 'minPos': element.yPos - parent.dragOptions.protrudingChildren.y.minPos };
-						}
-					}
-				}
-				if (VS.global.aInterfaceUtils.onInterfaceLoaded) {
-					VS.global.aInterfaceUtils.onInterfaceLoaded.apply(this, arguments);
-				}
-			};
-		}
 		
 		VS.global.aListener.addEventListener(VS.Client, 'onMouseClick', function(pDiob, pX, pY, pButton) {
 			if (this.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu').shown) {
@@ -842,23 +842,8 @@
 					this.dragging = true;
 				}
 				if (this.dragging) {
-					if (this._dragging.element.dragOptions.titlebar) {
-						if (this._dragging.element.dragOptions.titlebar.xPos >= 0 && this._dragging.element.dragOptions.titlebar.yPos >= 0 && this._dragging.element.dragOptions.titlebar.width > 0 && this._dragging.element.dragOptions.titlebar.height > 0) {
-/* 							const titleBarX = this._dragging.element.xPos + this._dragging.element.dragOptions.titlebar.xPos;
-							const titleBarWidthX = titleBarX + this._dragging.element.dragOptions.titlebar.width;
-							const titleBarY = this._dragging.element.yPos + this._dragging.element.dragOptions.titlebar.yPos;
-							const titleBarHeightY = titleBarY + this._dragging.element.dragOptions.titlebar.height; 
-*/
-							maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
-							maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
-						} else {
-							maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
-							maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
-						}
-					} else {
-						maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
-						maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
-					}
+					maxWidth = (this._dragging.element.preventAutoScale ? this._windowSize.width : this._gameSize.width) - this._dragging.element.width;
+					maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
 
 					this._dragging.element.setPos(Math.clamp(realX, this._dragging.element.dragOptions.clampedPos.x.minPos, maxWidth - this._dragging.element.dragOptions.clampedPos.x.maxPos), Math.clamp(realY, this._dragging.element.dragOptions.clampedPos.y.minPos, maxHeight - this._dragging.element.dragOptions.clampedPos.y.maxPos));
 
