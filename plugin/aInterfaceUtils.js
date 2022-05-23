@@ -350,7 +350,7 @@
 		}
 
 		alertMenuOkButton.onMouseExit = function(pClient, pX, pY) {
-			pClient.setMouseCursor('');
+			pClient.setMouseCursor('default');
 			this.alpha = 1;
 		}
 
@@ -467,7 +467,7 @@
 		}
 
 		inputMenuOkButton.onMouseExit = function(pClient, pX, pY) {
-			pClient.setMouseCursor('');
+			pClient.setMouseCursor('default');
 			this.alpha = 1;
 		}
 
@@ -545,7 +545,7 @@
 		}
 
 		confirmMenuYesButton.onMouseExit = function(pClient, pX, pY) {
-			pClient.setMouseCursor('');
+			pClient.setMouseCursor('default');
 			this.alpha = 1;
 		}
 
@@ -584,7 +584,7 @@
 		}
 
 		confirmMenuNoButton.onMouseExit = function(pClient, pX, pY) {
-			pClient.setMouseCursor('');
+			pClient.setMouseCursor('default');
 			this.alpha = 1;
 		}
 
@@ -981,14 +981,14 @@
 					if (!VS.Client.aInventory.isHoldingSlot) {
 						// The mouse may leave the element it's dragging if you move it fast enough, in those circumstances this would call if it enters another element. If you are still dragging the element, do not change the mouse cursor.
 						if (!VS.Client._dragging.element) {
-							VS.Client.setMouseCursor('');
+							VS.Client.setMouseCursor('default');
 							VS.global.aInterfaceUtils.cursor = '';
 						}
 					}				
 				} else {
 					// The mouse may leave the element it's dragging if you move it fast enough, in those circumstances this would call if it enters another element. If you are still dragging the element, do not change the mouse cursor.
 					if (!VS.Client._dragging.element) {
-						VS.Client.setMouseCursor('');
+						VS.Client.setMouseCursor('default');
 						VS.global.aInterfaceUtils.cursor = '';
 					}
 				}
@@ -1047,12 +1047,12 @@
 						if (VS.Client._dragging.element) {
 							VS.Client.releaseElement();
 						}
-						if (VS.Client.onMouseLeave && typeof(VS.Client.onMouseLeave) === 'function') {
-							VS.Client.onMouseLeave();
+						if (VS.Client.onMouseLeaveScreen && typeof(VS.Client.onMouseLeaveScreen) === 'function') {
+							VS.Client.onMouseLeaveScreen();
 						}
 					}
+					VS.Client.setMouseCursor('default');
 				}
-				VS.Client.setMouseCursor('');
 			}
 		}
 
@@ -1060,8 +1060,8 @@
 			if (VS.Client) {
 				if (aInterfaceUtils.mouseOffScreen) {
 					aInterfaceUtils.mouseOffScreen = false;
-					if (VS.Client.onMouseEnter && typeof(VS.Client.onMouseEnter) === 'function') {
-						VS.Client.onMouseEnter();
+					if (VS.Client.onMouseEnterScreen && typeof(VS.Client.onMouseEnterScreen) === 'function') {
+						VS.Client.onMouseEnterScreen();
 					}
 				}
 			}
@@ -1076,7 +1076,7 @@
 		});
 
 		document.addEventListener('mousemove', (pEvent) => {
-			if (pEvent.clientY <= 0 || pEvent.clientX <= 0 || pEvent.clientX >= window.innerWidth || pEvent.clientY >= window.innerHeight) {
+			if (!aInterfaceUtils.mouseOffScreen && (pEvent.clientY <= 0 || pEvent.clientX <= 0 || pEvent.clientX >= window.innerWidth || pEvent.clientY >= window.innerHeight)) {
 				leave();
 			} else if (aInterfaceUtils.mouseOffScreen) {
 				enter();
