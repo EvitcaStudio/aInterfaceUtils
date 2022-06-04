@@ -649,7 +649,7 @@
 				alertMenu.queueTracker++;
 				count = alertMenu.queueTracker;
 				setTimeout(function() {
-					VS.global.aInterfaceUtils.alert(alertMenu.queuedAlerts['message' + count], alertMenu.queuedAlerts['title' + count], alertMenu.queuedAlerts['callback' + count], alertMenu.queuedAlerts['parameters' + count]);
+					VS.global.aInterfaceUtils.alert(alertMenu.queuedAlerts['title' + count], alertMenu.queuedAlerts['message' + count], alertMenu.queuedAlerts['callback' + count], alertMenu.queuedAlerts['parameters' + count]);
 				}, 500);
 				alertMenu.itemsInQueue--;
 			} else {
@@ -795,7 +795,7 @@
 				confirmMenu.queueTracker++;
 				count = confirmMenu.queueTracker;
 				setTimeout(function() {
-					VS.global.aInterfaceUtils.confirm(confirmMenu.queuedDialogs['message' + count], confirmMenu.queuedDialogs['title' + count], confirmMenu.queuedDialogs['callback' + count], confirmMenu.queuedDialogs['parameters' + count]);
+					VS.global.aInterfaceUtils.confirm(confirmMenu.queuedDialogs['title' + count], confirmMenu.queuedDialogs['message' + count], confirmMenu.queuedDialogs['callback' + count], confirmMenu.queuedDialogs['parameters' + count]);
 				}, 500);
 				confirmMenu.itemsInQueue--;
 			} else {
