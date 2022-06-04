@@ -6,16 +6,16 @@
 	const onInterfaceLoaded = function(pInterface) {
 		let protruding;
 		let protrudingDirection;
-		const gameSize = VS.World.getGameSize();
-		const GAME_WIDTH = gameSize.width;
-		const GAME_HEIGHT = gameSize.height;
+		const windowSize = VS.Client.getWindowSize();
+		const WINDOW_WIDTH = windowSize.width;
+		const WINDOW_HEIGHT = windowSize.height;
 
 		const setup = function(pElement) {
 			const interfaceName = pElement.getInterfaceName();
 			pElement.defaultPos = { 'x': pElement.xPos ? pElement.xPos : 0, 'y': pElement.yPos ? pElement.yPos : 0 };
 			pElement.defaultDisplay = { 'layer': pElement.layer, 'plane': pElement.plane };
 			pElement.defaultSize = { 'width': pElement.width, 'height': pElement.height };
-			pElement.screenPercentage = { 'x': pElement.xPos / GAME_WIDTH, 'y': pElement.yPos / GAME_HEIGHT };
+			pElement.screenPercentage = { 'x': pElement.xPos / WINDOW_WIDTH, 'y': pElement.yPos / WINDOW_HEIGHT };
 			pElement.parentElement = VS.Client.getInterfaceElement(interfaceName, pElement.parentElement);
 			if (pElement.parentElement && !pElement.dragOptions.parent && pElement.preventAutoScale) {
 				pElement.parentOffset = { x: pElement.xPos - pElement.parentElement.xPos, y: pElement.yPos - pElement.parentElement.yPos };
@@ -830,14 +830,14 @@
 			for (const interface of this.getInterfaceNames()) {
 				// For every single interface that doesn't have a parent, reposition it when the window resizes
 				this.getInterfaceElements(interface).forEach((pElem) => {
-					if (!pElem.parentElement) {
+					if (!pElem.parentElement && pElem.preventAutoScale) {
 						pElem.setPos(pElem.screenPercentage.x * pWidth, pElem.screenPercentage.y * pHeight);
 					}
 				});
 				// For every single interface that does have a parent, reposition it when the window resizes based off of the parent's position
 				this.getInterfaceElements(interface).forEach((pElem) => {
 					if (pElem.parentElement) {
-						if (pElem.parentOffset) {
+						if (pElem.parentOffset && pElem.preventAutoScale) {
 							pElem.setPos(pElem.parentElement.xPos + pElem.parentOffset.x, pElem.parentElement.yPos + pElem.parentOffset.y);
 						}
 					}
