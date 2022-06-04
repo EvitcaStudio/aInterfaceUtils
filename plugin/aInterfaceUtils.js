@@ -6,13 +6,20 @@
 	const onInterfaceLoaded = function(pInterface) {
 		let protruding;
 		let protrudingDirection;
+		const gameSize = VS.World.getGameSize();
+		const GAME_WIDTH = gameSize.width;
+		const GAME_HEIGHT = gameSize.height;
 
 		const setup = function(pElement) {
 			const interfaceName = pElement.getInterfaceName();
 			pElement.defaultPos = { 'x': pElement.xPos ? pElement.xPos : 0, 'y': pElement.yPos ? pElement.yPos : 0 };
 			pElement.defaultDisplay = { 'layer': pElement.layer, 'plane': pElement.plane };
 			pElement.defaultSize = { 'width': pElement.width, 'height': pElement.height };
-			pElement.defaultScreenPercentage = { 'x': ((100 * pElement.xPos ? pElement.xPos : 0) / VS.World.getGameSize().width), 'y': ((100 * pElement.yPos ? pElement.yPos : 0) / VS.World.getGameSize().height) };
+			pElement.screenPercentage = { 'x': pElement.xPos / GAME_WIDTH, 'y': pElement.yPos / GAME_HEIGHT };
+			pElement.parentElement = VS.Client.getInterfaceElement(interfaceName, pElement.parentElement);
+			if (pElement.parentElement && !pElement.dragOptions.parent && pElement.preventAutoScale) {
+				pElement.parentOffset = { x: pElement.xPos - pElement.parentElement.xPos, y: pElement.yPos - pElement.parentElement.yPos };
+			}
 			if (!interfaceName) return;
 			pElement.interfaceName = interfaceName;
 
@@ -82,7 +89,7 @@
 
 		const getProtudingChildren = function(pElement, pInterface) {
 			for (const element of VS.Client.getInterfaceElements(pInterface)) {
-				if (element.parentElement === pElement.name) {
+				if (element.parentElement === pElement) {
 					const greaterX = (element.xPos + element.width > pElement.xPos + pElement.width) && (pElement.dragOptions.protrudingChildren.x.maxPos ? element.xPos > pElement.dragOptions.protrudingChildren.x.maxPos : true);
 					const lesserX = (element.xPos < pElement.xPos) && (pElement.dragOptions.protrudingChildren.x.minPos ? element.xPos < pElement.dragOptions.protrudingChildren.x.minPos : true);
 					const greaterY = (element.yPos + element.height > pElement.yPos + pElement.height) && (pElement.dragOptions.protrudingChildren.y.maxPos ? element.yPos > pElement.dragOptions.protrudingChildren.y.maxPos : true);
@@ -157,7 +164,7 @@
 			}
 
 			if (element.parentElement) {
-				const parent = this.getInterfaceElement(pInterface, element.parentElement);
+				const parent = element.parentElement;
 				const noneX = Math.sign(element.xPos - parent.xPos) === -1 ? 0 : element.xPos - parent.xPos;
 				const noneY = Math.sign(element.yPos - parent.yPos) === -1 ? 0 : element.yPos - parent.yPos;
 				element.dragOptions.owner = parent;
@@ -820,6 +827,23 @@
 		});
 
 		VS.global.aListener.addEventListener(VS.Client, 'onWindowResize', function(pWidth, pHeight) {
+			for (const interface of this.getInterfaceNames()) {
+				// For every single interface that doesn't have a parent, reposition it when the window resizes
+				this.getInterfaceElements(interface).forEach((pElem) => {
+					if (!pElem.parentElement) {
+						pElem.setPos(pElem.screenPercentage.x * pWidth, pElem.screenPercentage.y * pHeight);
+					}
+				});
+				// For every single interface that does have a parent, reposition it when the window resizes based off of the parent's position
+				this.getInterfaceElements(interface).forEach((pElem) => {
+					if (pElem.parentElement) {
+						if (pElem.parentOffset) {
+							pElem.setPos(pElem.parentElement.xPos + pElem.parentOffset.x, pElem.parentElement.yPos + pElem.parentOffset.y);
+						}
+					}
+				});
+			}
+
 			if (this._windowSize) {
 				this._windowSize.width = pWidth;
 				this._windowSize.height = pHeight;
@@ -846,6 +870,8 @@
 					maxHeight = (this._dragging.element.preventAutoScale ? this._windowSize.height : this._gameSize.height) - this._dragging.element.height;
 
 					this._dragging.element.setPos(Math.clamp(realX, this._dragging.element.dragOptions.clampedPos.x.minPos, maxWidth - this._dragging.element.dragOptions.clampedPos.x.maxPos), Math.clamp(realY, this._dragging.element.dragOptions.clampedPos.y.minPos, maxHeight - this._dragging.element.dragOptions.clampedPos.y.maxPos));
+					this._dragging.element.screenPercentage.x = this._dragging.element.xPos / this._windowSize.width;
+					this._dragging.element.screenPercentage.y = this._dragging.element.yPos / this._windowSize.height;
 
 					if (this._dragging.element.onDragMove && typeof(this._dragging.element.onDragMove) === 'function') {
 						this._dragging.element.onDragMove();
@@ -857,7 +883,7 @@
 
 						for (const element of this.getInterfaceElements(this._dragging.element.interfaceName)) {
 							if (element !== this._dragging.element) {
-								if (element.parentElement === this._dragging.element.name) {
+								if (element.parentElement === this._dragging.element) {
 									element.reposition(realX, realY, this._dragging.element.defaultPos.x, this._dragging.element.defaultPos.y);
 									if (element.onDragMove && typeof(element.onDragMove) === 'function') {
 										element.onDragMove();
@@ -882,7 +908,7 @@
 
 					for (const childElem of this.getInterfaceElements(this._dragging.element.interfaceName)) {
 						if (childElem !== this._dragging.element) {
-							if (childElem.parentElement === this._dragging.element.name) {
+							if (childElem.parentElement === this._dragging.element) {
 								// automatically dynamically relayer the children element when dragging it so its above everything else
 								childElem.plane += MAX_PLANE;
 								childElem.layer += MAX_PLANE;
@@ -940,7 +966,7 @@
 
 				for (const childElem of this.getInterfaceElements(this._dragging.element.interfaceName)) {
 					if (childElem !== this._dragging.element) {
-						if (childElem.parentElement === this._dragging.element.name) {
+						if (childElem.parentElement === this._dragging.element) {
 							// automatically dynamically relayer the children elements as well when you stop dragging it so they get their original layering
 							childElem.plane -= MAX_PLANE;
 							childElem.layer -= MAX_PLANE;
@@ -1037,6 +1063,8 @@
 			if (protrudingDirection === 's' || protrudingDirection === 'ws' || protrudingDirection === 'sn' || protrudingDirection === 'es' || protrudingDirection === 'ews' || protrudingDirection === 'ewns' || protrudingDirection === 'ens' || protrudingDirection === 'wns') {
 				this.yPos = Math.clamp(pY - yOff + this.defaultPos.y - pDefaultY, this.dragOptions.clampedPos.y.minPos, size.height - this.dragOptions.clampedPos.y.maxPos);
 			}
+			this.screenPercentage.x = this.xPos / VS.Client._windowSize.width;
+			this.screenPercentage.y = this.yPos / VS.Client._windowSize.height;
 		});
 
 		const leave = () => {
