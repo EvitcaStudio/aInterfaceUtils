@@ -1004,7 +1004,7 @@
 				// If the aInventory library is present, you cannot change the mouse cursor if a slot is being held
 				if (VS.Client.___EVITCA_aInventory) {
 					// When you are dragging something from an inventory this will not allow the mouse cursor to be changed.
-					if (!VS.Client.aInventory.isHoldingSlot) {
+					if (!VS.Client.aInventory.isHoldingItem()) {
 						// The mouse may leave the element it's dragging if you move it fast enough, in those circumstances this would call if it enters another element. If you are still dragging the element, do not change the mouse cursor.
 						if (!VS.Client._dragging.element) {
 							VS.Client.setMouseCursor('default');
@@ -1023,7 +1023,7 @@
 			// If the aInventory library is present, you cannot change the mouse cursor if a slot is being held
 			if (VS.Client.___EVITCA_aInventory) {
 				// When you are dragging something from an inventory this will not allow the mouse cursor to be changed.
-				if (!VS.Client.aInventory.isHoldingSlot) {
+				if (!VS.Client.aInventory.isHoldingItem()) {
 					VS.Client.setMouseCursor('move');
 					VS.global.aInterfaceUtils.cursor = 'move';
 				}
