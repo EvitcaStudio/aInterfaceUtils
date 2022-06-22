@@ -226,7 +226,7 @@
 
 	const buildInterfaceUtils = () => {
 		const aInterfaceUtils = {};
-		const MAX_PLANE = 1999998;
+		const MAX_PLANE = 199998;
 		VS.Client._screenScale = { 'x': 1, 'y': 1 };
 		VS.Client._windowSize = VS.Client.getWindowSize();
 		VS.Client._gameSize = VS.World.getGameSize();
@@ -953,7 +953,7 @@
 		});
 
 		VS.Client.releaseElement = function() {
-			const MAX_PLANE = 999999;
+			const MAX_PLANE = 99999;
 			const self = this;
 			if (this._dragging.element.dragOptions.beingDragged) {
 				if (this._dragging.element.onDragEnd && typeof(this._dragging.element.onDragEnd) === 'function') {
