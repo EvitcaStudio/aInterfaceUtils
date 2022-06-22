@@ -830,7 +830,7 @@
 			for (const interface of this.getInterfaceNames()) {
 				// For every single interface that doesn't have a parent, reposition it when the window resizes
 				this.getInterfaceElements(interface).forEach((pElem) => {
-					if (!pElem.parentElement && pElem.preventAutoScale) {
+					if (!pElem.parentElement && pElem.preventAutoScale && pElem.screenPercentage) {
 						pElem.setPos(pElem.screenPercentage.x * pWidth, pElem.screenPercentage.y * pHeight);
 					}
 				});
