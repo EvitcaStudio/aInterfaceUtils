@@ -5,7 +5,8 @@ Download everything inside the `plugin` folder and import it into your project.
 
 ## API  
   
-### - interfaceElement.dragOptions
+### interfaceElement.dragOptions  
+  - `desc`: The drag options for this element  
 
 ## Example  
 #### Make an interface draggable
@@ -35,7 +36,9 @@ Interface
 
 Yes you can! Using `dragOptions.titlebar.xPos` and `dragOptions.titlebar.yPos`. These specify the origin position of the element. Using the above mentioned values of `50` for `dragOptions.titlebar.xPos` and `50` for `dragOptions.titlebar.yPos` will effectively offset the bounds of this element to the right `50` pixels and down `50` pixels.
 
-### - interfaceElement.parentElement  
+### interfaceElement.parentElement  
+  - `desc`: The name of the parent element that this element will follow when it is dragged  
+
 ## Example  
 #### Make a child element follow a parent element when dragging
 ```ts
