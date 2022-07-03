@@ -237,6 +237,7 @@
 		VS.Client.___EVITCA_aInterfaceUtils = true;
 		VS.Client.aInterfaceUtils = aInterfaceUtils;
 		VS.global.aInterfaceUtils = aInterfaceUtils;
+		window.aInterfaceUtils = aInterfaceUtils;
 
 		VS.Client.createInterface('aInterfaceUtils_alert_interface');
 		VS.Client.createInterface('aInterfaceUtils_input_interface');
