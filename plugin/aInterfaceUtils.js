@@ -858,7 +858,7 @@
 					this.aInterfaceUtils.preventMouseMoveEvent = false;
 					return;
 				}
-				const MAX_PLANE = 999999;
+				const MAX_PLANE = 99999;
 				let realX = (this._dragging.element.preventAutoScale ? pX * this._screenScale.x : pX) - this._dragging.xOff;
 				let realY = (this._dragging.element.preventAutoScale ? pY * this._screenScale.y : pY) - this._dragging.yOff;
 				let maxWidth;
