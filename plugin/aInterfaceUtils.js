@@ -210,7 +210,7 @@
 				}
 			}
 		}
-		if (this._onInterfacedLoaded && typeof(this._onInterfacedLoaded) === 'function') {
+		if (typeof(this._onInterfacedLoaded) === 'function') {
 			this._onInterfacedLoaded.apply(this, arguments);
 		}
 	};
@@ -460,7 +460,7 @@
 			const inputMenu = pClient.getInterfaceElement('aInterfaceUtils_input_interface', 'input_menu');
 			aInterfaceUtils.closeInputMenu();
 			if (inputMenu.closing) {
-				if (inputMenu.callback && typeof(inputMenu.callback) === 'function') {
+				if (typeof(inputMenu.callback) === 'function') {
 					if (inputMenu.parameters) {
 						inputMenu.callback(inputMenu.inputValue, ...inputMenu.parameters);
 					} else {
@@ -560,7 +560,7 @@
 		confirmMenuYesButton.onMouseClick = function(pClient, pX, pY, pButton) {
 			if (pButton === 1 && this.isMousedDown()) {
 				const confirmMenu = pClient.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
-				if (confirmMenu.callback && typeof(confirmMenu.callback) === 'function') {
+				if (typeof(confirmMenu.callback) === 'function') {
 					if (confirmMenu.parameters) {
 						confirmMenu.callback(true, ...confirmMenu.parameters);
 					} else {
@@ -599,7 +599,7 @@
 		confirmMenuNoButton.onMouseClick = function(pClient, pX, pY, pButton) {
 			if (pButton === 1 && this.isMousedDown()) {
 				const confirmMenu = pClient.getInterfaceElement('aInterfaceUtils_confirm_interface', 'confirm_menu');
-				if (confirmMenu.callback && typeof(confirmMenu.callback) === 'function') {
+				if (typeof(confirmMenu.callback) === 'function') {
 					if (confirmMenu.parameters) {
 						confirmMenu.callback(false, ...confirmMenu.parameters);
 					} else {
@@ -874,9 +874,7 @@
 					this._dragging.element.screenPercentage.x = this._dragging.element.xPos / this._windowSize.width;
 					this._dragging.element.screenPercentage.y = this._dragging.element.yPos / this._windowSize.height;
 
-					if (this._dragging.element.onDragMove && typeof(this._dragging.element.onDragMove) === 'function') {
-						this._dragging.element.onDragMove();
-					}
+					if (typeof(this._dragging.element.onDragMove) === 'function') this._dragging.element.onDragMove();
 
 					if (this._dragging.element.dragOptions.parent) {
 						realX += this._dragging.xOff;
@@ -886,23 +884,17 @@
 							if (element !== this._dragging.element) {
 								if (element.parentElement === this._dragging.element) {
 									element.reposition(realX, realY, this._dragging.element.defaultPos.x, this._dragging.element.defaultPos.y);
-									if (element.onDragMove && typeof(element.onDragMove) === 'function') {
-										element.onDragMove();
-									}
+									if (typeof(element.onDragMove) === 'function') element.onDragMove();
 								}
 							}
 						}
 					}
 
-					if (this._dragging.element.dragOptions.beingDragged) {
-						return;
-					}
+					if (this._dragging.element.dragOptions.beingDragged) return;
 
 					this._dragging.element.dragOptions.beingDragged = true;
 
-					if (this._dragging.element.onDragStart && typeof(this._dragging.element.onDragStart) === 'function') {
-						this._dragging.element.onDragStart();
-					}
+					if (typeof(this._dragging.element.onDragStart) === 'function') this._dragging.element.onDragStart();
 					// automatically dynamically relayer this element when dragging it so its above everything else
 					this._dragging.element.plane += MAX_PLANE;
 					this._dragging.element.layer += MAX_PLANE;
@@ -913,9 +905,7 @@
 								// automatically dynamically relayer the children element when dragging it so its above everything else
 								childElem.plane += MAX_PLANE;
 								childElem.layer += MAX_PLANE;
-								if (childElem.onDragStart && typeof(childElem.onDragStart) === 'function') {
-									childElem.onDragStart();
-								}
+								if (typeof(childElem.onDragStart) === 'function') childElem.onDragStart();
 							}
 						}
 					}
@@ -957,9 +947,7 @@
 			const MAX_PLANE = 99999;
 			const self = this;
 			if (this._dragging.element.dragOptions.beingDragged) {
-				if (this._dragging.element.onDragEnd && typeof(this._dragging.element.onDragEnd) === 'function') {
-					this._dragging.element.onDragEnd();
-				}
+				if (typeof(this._dragging.element.onDragEnd) === 'function') this._dragging.element.onDragEnd();
 
 				// automatically dynamically relayer this element when you stop dragging it so it gets its original layering
 				this._dragging.element.plane -= MAX_PLANE;
@@ -971,9 +959,7 @@
 							// automatically dynamically relayer the children elements as well when you stop dragging it so they get their original layering
 							childElem.plane -= MAX_PLANE;
 							childElem.layer -= MAX_PLANE;
-							if (childElem.onDragEnd && typeof(childElem.onDragEnd) === 'function') {
-								childElem.onDragEnd();
-							}
+							if (typeof(childElem.onDragEnd) === 'function') childElem.onDragEnd();
 						}
 					}
 				}
@@ -1073,12 +1059,8 @@
 				if (!aInterfaceUtils.mouseOffScreen) {
 					aInterfaceUtils.mouseOffScreen = true;
 					if (VS.Client._dragging) {
-						if (VS.Client._dragging.element) {
-							VS.Client.releaseElement();
-						}
-						if (VS.Client.onMouseLeaveScreen && typeof(VS.Client.onMouseLeaveScreen) === 'function') {
-							VS.Client.onMouseLeaveScreen();
-						}
+						if (VS.Client._dragging.element) VS.Client.releaseElement();
+						if (typeof(VS.Client.onMouseLeaveScreen) === 'function') VS.Client.onMouseLeaveScreen();
 					}
 					VS.Client.setMouseCursor('default');
 				}
@@ -1089,9 +1071,7 @@
 			if (VS.Client) {
 				if (aInterfaceUtils.mouseOffScreen) {
 					aInterfaceUtils.mouseOffScreen = false;
-					if (VS.Client.onMouseEnterScreen && typeof(VS.Client.onMouseEnterScreen) === 'function') {
-						VS.Client.onMouseEnterScreen();
-					}
+					if (typeof(VS.Client.onMouseEnterScreen) === 'function') VS.Client.onMouseEnterScreen();
 				}
 			}
 		}
